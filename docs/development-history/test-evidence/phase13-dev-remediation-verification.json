@@ -1,0 +1,33 @@
+{
+  "repository": "${ALLINONE_HOME}\\workspaces\\demo-order-service",
+  "isolated_branch": "fix/order-validation-and-sha256",
+  "main_branch_untouched": true,
+  "baseline_findings_count": 2,
+  "post_remediation_findings_count": 0,
+  "finding_id": "FND-1C3FCD9F8E",
+  "finding_final_status": "RESOLVED",
+  "security_review_run": {
+    "id": "ec6471a6-4e19-4dd8-8d61-01c901099334",
+    "status": "succeeded",
+    "exit_code": 0
+  },
+  "developer_remediation_run": {
+    "id": "ef0fbe51-5f30-4f50-9bdb-74728b82e612",
+    "status": "succeeded",
+    "exit_code": 0
+  },
+  "qa_verification_run": {
+    "id": "2ac6de43-d2a4-456e-8803-e171567c2a2c",
+    "status": "succeeded",
+    "exit_code": 0
+  },
+  "host_unittest_exit_code": 0,
+  "host_unittest_output": "discounted_total) ... ok\ntest_invalid_discount (test_order_service.TestOrderService.test_invalid_discount) ... ok\ntest_receipt_digest_sha256 (test_order_service.TestOrderService.test_receipt_digest_sha256) ... ok\ntest_subtotal_basic (test_order_service.TestOrderService.test_subtotal_basic) ... ok\ntest_subtotal_negative_values (test_order_service.TestOrderService.test_subtotal_negative_values) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK",
+  "git_diff_stat": "__pycache__/order_service.cpython-314.pyc      | Bin 2366 -> 2486 bytes\n __pycache__/test_order_service.cpython-314.pyc | Bin 2954 -> 2976 bytes\n order_service.py                               |  19 +++++++++++++++----\n test_order_service.py                          |  25 ++++++++++++++++++++++++-\n 4 files changed, 39 insertions(+), 5 deletions(-)",
+  "production_deploy_gate": {
+    "issue_id": "e8675a44-2750-4a9a-a956-2f32a6ed1184",
+    "identifier": "UNI-38",
+    "workflow_stage": "PENDING_APPROVAL",
+    "paperclip_status": "blocked"
+  }
+}

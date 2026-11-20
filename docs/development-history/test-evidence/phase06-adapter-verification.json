@@ -1,0 +1,35 @@
+{
+  "owner_sessions_before": 26,
+  "owner_sessions_after": 26,
+  "owner_sessions_untouched": true,
+  "telegram_gateway_healthy": true,
+  "hermes_gateway_eval": {
+    "hermes_upstream_finding": "gateway/config.py:333 SHARED_LISTENER_MIRROR_PLATFORMS={'api_server','webhook'}: secondary profiles cannot bind independent api_server port; enabling api_server on default profile would expose Owner profile. Selected hermes_local + named profiles (<root>/profiles/<id>) for strict isolation & 0 MB idle overhead.",
+    "unauth_rejected_status": 401,
+    "wrong_key_rejected_status": 401,
+    "bad_paperclip_token_rejected_status": 401,
+    "valid_key_status": 200,
+    "gateway_adapter_run_id": "9b727445-346e-431b-b968-c8c8bbbbfdcf",
+    "gateway_adapter_run_status": "succeeded",
+    "gateway_exit_code": 0,
+    "gateway_summary_preview": "GATEWAY_TRANSPORT_CONTRACT_VERIFIED"
+  },
+  "hermes_local_e2e": {
+    "issue_identifier": "UNI-8",
+    "issue_final_status": "done",
+    "issue_updated_by_agent": true,
+    "run_id": "87eb3d69-26b4-4431-b997-af119e200824",
+    "run_status": "succeeded",
+    "exit_code": 0,
+    "session_id_captured": "local-ca9b644722d7e18fbc61f0efb56c48043209fcceb70c16a18923665363820641",
+    "calculator_created": true,
+    "test_created": true,
+    "unittest_exit_code": 0,
+    "unittest_output": "est_add_numbers_negative) ... ok\ntest_add_numbers_positive (test_calculator.TestCalculator.test_add_numbers_positive) ... ok\ntest_multiply_numbers (test_calculator.TestCalculator.test_multiply_numbers) ... ok\ntest_multiply_numbers_zero (test_calculator.TestCalculator.test_multiply_numbers_zero) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK",
+    "timeout_run_id": "019b7d38-4942-4484-9af9-704266ae8594",
+    "timeout_run_status": "timed_out",
+    "cancelled_run_id": "8a604de7-f53f-4611-9bfa-6aaa0753e985",
+    "cancelled_run_status": "cancelled",
+    "worker_isolated_sessions_count": 9
+  }
+}

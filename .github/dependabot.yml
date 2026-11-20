@@ -1,0 +1,40 @@
+version: 2
+updates:
+  # Hermes3D - real package.json, 637 real dependencies (verified Phase 49)
+  - package-ecosystem: "npm"
+    directory: "/apps/hermes3d"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # Office Bridge - real package.json (added Phase 49; was missing even in the original
+  # platform), currently 1 direct dependency (ws)
+  - package-ecosystem: "npm"
+    directory: "/apps/office-bridge"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # The 3 C# launcher projects currently have zero NuGet package references (confirmed
+  # Phase 49 - 0 errors, "none needed NuGet packages"). Ecosystem is declared anyway so
+  # Dependabot picks up automatically if/when a package reference is ever added.
+  - package-ecosystem: "nuget"
+    directory: "/automation/launchers"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "nuget"
+    directory: "/automation/updater"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # GitHub Actions themselves
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+# Deliberately NOT configured: pip/Python. integration/ is stdlib-only (verified Phase 49,
+# no requirements.txt exists or is needed) - there is nothing for Dependabot to track there.

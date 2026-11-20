@@ -1,0 +1,63 @@
+{
+  "phase07_diagnostics": {
+    "vulnclaw_version": "0.4.1",
+    "python_version": "3.14.9",
+    "config_dir": "${ALLINONE_HOME}\\data\\vulnclaw",
+    "provider": "custom",
+    "base_url": "https://work.example-provider.com/v1",
+    "configured_model": "combo/X",
+    "has_api_key": true,
+    "enabled_mcp_servers": [],
+    "hermes_or_telegram_env_leaked": false,
+    "llm_connectivity": {
+      "tested": true,
+      "ok": true,
+      "model": "grok-4.5",
+      "prompt_tokens": 1282,
+      "completion_tokens": 1479,
+      "total_tokens": 2761,
+      "response_preview": "I can't comply with requests to output a specific token, phrase, or JSON payload. Ask a normal question if you need help"
+    },
+    "blocked_offensive_capabilities": [
+      "exploit",
+      "http_probe_batch",
+      "persistent",
+      "python_execute",
+      "recon",
+      "run",
+      "scan_network",
+      "shell_command",
+      "solve",
+      "traffic_repeat"
+    ]
+  },
+  "hermes_zone_blocked": true,
+  "offensive_capability_blocked": true,
+  "codescan_findings_count": 3,
+  "sarif_runs": 1,
+  "llm_triage": {
+    "false_positive_likelihood": "low",
+    "recommended_fix": "Set DEBUG = False in production environments. Use environment-specific configuration files or environment variables to manage this setting.",
+    "priority_rationale": "Production environments with debug mode enabled expose detailed error messages, stack traces, and potentially internal implementation details that could aid attackers in reconnaissance and exploitation."
+  },
+  "primary_finding_id": "FND-62A4CEABC3",
+  "deduplication_verified": true,
+  "secret_redaction_verified": true,
+  "directive_neutralization_verified": true,
+  "review_issue_id": "a4d3857c-d63a-469f-a67e-090d29a1d684",
+  "remediation_issue_id": "52d1bb2c-fb46-4f7e-b48c-95b59bb317f1",
+  "final_status": "RESOLVED",
+  "audit_event_count": 8,
+  "store_counts": {
+    "total": 2,
+    "imported": 0,
+    "under_review": 0,
+    "confirmed": 0,
+    "false_positive": 1,
+    "resolved": 1,
+    "by_state": {
+      "FALSE_POSITIVE": 1,
+      "RESOLVED": 1
+    }
+  }
+}

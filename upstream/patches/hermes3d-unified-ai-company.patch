@@ -1,0 +1,1320 @@
+warning: LF will be replaced by CRLF in src/features/enterprise-company/EnterpriseOfficeOverlay.tsx.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in src/features/enterprise-company/useEnterpriseCompanyLive.ts.
+The file will have its original line endings in your working directory
+diff --git a/src/app/api/path-suggestions/route.ts b/src/app/api/path-suggestions/route.ts
+index 7b4d6cf..4cc0d03 100644
+--- a/src/app/api/path-suggestions/route.ts
++++ b/src/app/api/path-suggestions/route.ts
+@@ -135,10 +135,18 @@ export async function GET(request: Request) {
+   try {
+     const { searchParams } = new URL(request.url);
+     const rawQuery = searchParams.get("q");
+-    const query = rawQuery && rawQuery.trim() ? rawQuery.trim() : "~/";
+-    const governedRoot = process.env.UNIFIED_COMPANY_GOVERNANCE === "1"
+-      ? () => "D:\\AI-Agent-Platform\\workspaces"
+-      : undefined;
++    let query = rawQuery && rawQuery.trim() ? rawQuery.trim() : "~/";
++    let governedRoot: (() => string) | undefined;
++    if (process.env.UNIFIED_COMPANY_GOVERNANCE === "1") {
++      const laragonPrefixMatch = query.match(/^c:[\\/]laragon[\\/]www(?:[\\/](.*))?$/i);
++      if (laragonPrefixMatch) {
++        governedRoot = () => "C:\\laragon\\www";
++        const sub = (laragonPrefixMatch[1] || "").replace(/\\/g, "/");
++        query = sub ? `~/${sub}` : "~/";
++      } else {
++        governedRoot = () => "D:\\AI-Agent-Platform\\workspaces";
++      }
++    }
+     const result = listPathAutocompleteEntries({
+       query,
+       maxResults: 10,
+diff --git a/src/features/enterprise-company/EnterpriseOfficeOverlay.tsx b/src/features/enterprise-company/EnterpriseOfficeOverlay.tsx
+index 6cb7700..9b63267 100644
+--- a/src/features/enterprise-company/EnterpriseOfficeOverlay.tsx
++++ b/src/features/enterprise-company/EnterpriseOfficeOverlay.tsx
+@@ -268,7 +268,7 @@ export function EnterpriseOfficeOverlay({
+               type="button"
+               data-testid={`dept-jump-${dept.id}`}
+               onClick={() => handleFlyToDepartment(dept.id, dept.cameraTarget.x, dept.cameraTarget.y)}
+-              className="hidden rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase hover:border-cyan-400/50 hover:text-cyan-200 lg:inline-block"
++              className="inline-block rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase hover:border-cyan-400/50 hover:text-cyan-200"
+               title={`Jump to ${dept.name}`}
+             >
+               {dept.shortLabel}
+@@ -751,8 +751,30 @@ export function EnterpriseOfficeOverlay({
+                     placeholder="Authorized workflow agenda & concrete deliverables..."
+                     className="w-full rounded border border-white/15 bg-slate-950 px-2 py-1 text-xs"
+                   />
++                  <div className="flex items-center justify-between">
++                    <span className="text-[10px] text-slate-400">
++                      Participants ({mtgParticipants.length}/{agents.length}):
++                    </span>
++                    <div className="flex gap-1.5">
++                      <button
++                        type="button"
++                        data-testid="select-all-11-agents-btn"
++                        onClick={() => setMtgParticipants(agents.map((a) => a.paperclip_agent_id))}
++                        className="rounded border border-cyan-400/40 bg-cyan-500/15 px-2 py-0.5 text-[10px] text-cyan-200 hover:bg-cyan-500/25"
++                      >
++                        Select All {agents.length} Agents
++                      </button>
++                      <button
++                        type="button"
++                        onClick={() => setMtgParticipants([])}
++                        className="rounded border border-white/15 px-2 py-0.5 text-[10px] text-slate-400 hover:text-white"
++                      >
++                        Clear
++                      </button>
++                    </div>
++                  </div>
+                   <div className="flex flex-wrap gap-1">
+-                    {agents.slice(0, 6).map((a) => {
++                    {agents.map((a) => {
+                       const checked = mtgParticipants.includes(a.paperclip_agent_id);
+                       return (
+                         <button
+@@ -774,24 +796,29 @@ export function EnterpriseOfficeOverlay({
+                   </div>
+                   <button
+                     type="button"
++                    data-testid="start-authorized-meeting-btn"
+                     onClick={() => {
++                      const chosen = mtgParticipants.length >= 2 ? mtgParticipants : agents.map((a) => a.paperclip_agent_id);
+                       createMeeting({
+-                        title: mtgTitle || "Sprint & Security Sync",
+-                        agenda: mtgAgenda,
+-                        participant_agent_ids: mtgParticipants,
+-                        max_turns: 2,
+-                        timeout_sec: 120,
++                        title: mtgTitle || "All-Hands Coordination Sync",
++                        agenda: mtgAgenda || "Sinkronisasi arsitektur, keamanan, dan eksekusi lintas departemen.",
++                        participant_agent_ids: chosen,
++                        max_turns: 3,
++                        timeout_sec: 180,
+                       })
+                         .then(() => {
+                           setMtgTitle("");
+                           setMtgAgenda("");
+-                          setActionBanner({ kind: "ok", text: "Authorized meeting created in Paperclip." });
++                          setActionBanner({
++                            kind: "ok",
++                            text: `Meeting started — ${chosen.length} agents gathering in 3D Meeting Room!`,
++                          });
+                         })
+                         .catch((e: Error) => setActionBanner({ kind: "err", text: e.message }));
+                     }}
+                     className="rounded bg-cyan-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-cyan-500"
+                   >
+-                    Start Authorized Meeting
++                    Gather in 3D Meeting Room &amp; Start Sync
+                   </button>
+                 </div>
+ 
+diff --git a/src/features/enterprise-company/useEnterpriseCompanyLive.ts b/src/features/enterprise-company/useEnterpriseCompanyLive.ts
+index fc2e69a..a8ed0b2 100644
+--- a/src/features/enterprise-company/useEnterpriseCompanyLive.ts
++++ b/src/features/enterprise-company/useEnterpriseCompanyLive.ts
+@@ -108,6 +108,16 @@ export function useEnterpriseCompanyLive(enabled: boolean = true) {
+             }
+           } else if (parsed.type === "office.event" && parsed.event) {
+             appendUniqueEvents([parsed.event]);
++            if (parsed.event.event_type === "meeting.started" || parsed.event.event_type === "meeting.completed") {
++              window.dispatchEvent(new CustomEvent("enterprise-office:standup-sync", { detail: parsed.event }));
++              if (parsed.event.event_type === "meeting.started") {
++                window.dispatchEvent(
++                  new CustomEvent("enterprise-office:command", {
++                    detail: { type: "flyToCanvas", deptId: "meeting_room", x: 145, y: 118, zoom: 72 },
++                  })
++                );
++              }
++            }
+             // Refresh snapshot smoothly when structural state changes
+             void fetchSnapshot(false);
+           } else if (parsed.type === "resync_required") {
+@@ -267,6 +277,7 @@ export function useEnterpriseCompanyLive(enabled: boolean = true) {
+     async (payload: {
+       title: string;
+       agenda: string;
++      target_path?: string | null;
+       participant_agent_ids: string[];
+       max_turns?: number;
+       timeout_sec?: number;
+@@ -278,6 +289,14 @@ export function useEnterpriseCompanyLive(enabled: boolean = true) {
+       });
+       const data = await res.json();
+       if (!res.ok) throw new Error(data.error || "Failed to create meeting.");
++      if (typeof window !== "undefined") {
++        window.dispatchEvent(new CustomEvent("enterprise-office:standup-sync"));
++        window.dispatchEvent(
++          new CustomEvent("enterprise-office:command", {
++            detail: { type: "flyToCanvas", deptId: "meeting_room", x: 145, y: 118, zoom: 72 },
++          })
++        );
++      }
+       await fetchSnapshot(true);
+       return data;
+     },
+@@ -293,6 +312,9 @@ export function useEnterpriseCompanyLive(enabled: boolean = true) {
+       });
+       const data = await res.json();
+       if (!res.ok) throw new Error(data.error || "Failed to complete meeting.");
++      if (typeof window !== "undefined") {
++        window.dispatchEvent(new CustomEvent("enterprise-office:standup-sync"));
++      }
+       await fetchSnapshot(true);
+       return data;
+     },
+diff --git a/src/features/office/components/HQSidebar.tsx b/src/features/office/components/HQSidebar.tsx
+index 1968bbb..7dcec23 100644
+--- a/src/features/office/components/HQSidebar.tsx
++++ b/src/features/office/components/HQSidebar.tsx
+@@ -94,6 +94,7 @@ export function HQSidebar({
+ 
+         <button
+           type="button"
++          data-testid="hq-analytics-tab-btn"
+           onClick={() => {
+             onTabChange("analytics");
+             if (!open) {
+@@ -116,8 +117,13 @@ export function HQSidebar({
+ 
+       {open ? (
+         <div
+-          className={`pointer-events-auto flex h-full flex-col border-l border-cyan-500/20 bg-black/85 shadow-2xl backdrop-blur ${
+-            boardLikeWidth ? "w-[min(94vw,1180px)]" : "w-56"
++          data-testid="hq-sidebar-drawer"
++          className={`pointer-events-auto flex h-full flex-col border-l border-cyan-500/20 bg-black/88 shadow-2xl backdrop-blur ${
++            boardLikeWidth
++              ? "w-[min(94vw,1180px)]"
++              : analyticsOnly
++                ? "w-[min(92vw,420px)]"
++                : "w-72"
+           }`}
+         >
+           <div className="border-b border-cyan-500/15 px-4 py-3">
+diff --git a/src/features/office/components/panels/AnalyticsPanel.tsx b/src/features/office/components/panels/AnalyticsPanel.tsx
+index e75c64f..297fb3f 100644
+--- a/src/features/office/components/panels/AnalyticsPanel.tsx
++++ b/src/features/office/components/panels/AnalyticsPanel.tsx
+@@ -150,10 +150,20 @@ export function AnalyticsPanel({
+     enabled: approvalsEnabled,
+     agents,
+   });
++  const toolCallsByAgentId = useMemo(() => {
++    const counts: Record<string, number> = {};
++    for (const session of usage.sessions) {
++      if (!session.agentId) continue;
++      counts[session.agentId] =
++        (counts[session.agentId] ?? 0) + (session.usage.toolUsage.totalCalls ?? 0);
++    }
++    return counts;
++  }, [usage.sessions]);
+   const performance = usePerformanceAnalytics({
+     agents,
+     runLog,
+     approvalByAgent: approvalMetrics.byAgent,
++    toolCallsByAgentId,
+   });
+ 
+   const dailyChartMax = useMemo(() => {
+@@ -338,10 +348,18 @@ export function AnalyticsPanel({
+               Cost Breakdown
+             </div>
+             <div className="mt-2 space-y-1 font-mono text-[11px] text-white/70">
+-              <div>Input: {formatCurrency(usage.totals.inputCost)}.</div>
+-              <div>Output: {formatCurrency(usage.totals.outputCost)}.</div>
+-              <div>Cache read: {formatCurrency(usage.totals.cacheReadCost)}.</div>
+-              <div>Cache write: {formatCurrency(usage.totals.cacheWriteCost)}.</div>
++              <div>
++                Input: {formatCurrency(usage.totals.inputCost)} ({formatNumber(usage.totals.input)} tok).
++              </div>
++              <div>
++                Output: {formatCurrency(usage.totals.outputCost)} ({formatNumber(usage.totals.output)} tok).
++              </div>
++              <div>
++                Cache read: {formatCurrency(usage.totals.cacheReadCost)} ({formatNumber(usage.totals.cacheRead)} tok).
++              </div>
++              <div>
++                Cache write: {formatCurrency(usage.totals.cacheWriteCost)} ({formatNumber(usage.totals.cacheWrite)} tok).
++              </div>
+             </div>
+           </div>
+         </div>
+@@ -351,16 +369,16 @@ export function AnalyticsPanel({
+             Top Agents By Spend
+           </div>
+           <div className="mt-3 space-y-2">
+-            {usage.aggregates.byAgent.slice(0, 6).map((entry) => (
++            {usage.aggregates.byAgent.slice(0, 11).map((entry) => (
+               <button
+                 key={entry.agentId}
+                 type="button"
+                 onClick={() => onSelectAgent(entry.agentId)}
+-                className="flex w-full items-center justify-between rounded border border-white/8 bg-black/25 px-3 py-2 text-left transition-colors hover:border-cyan-400/25 hover:bg-cyan-500/[0.04]"
++                className="flex w-full items-center justify-between gap-2 rounded border border-white/8 bg-black/25 px-3 py-2 text-left transition-colors hover:border-cyan-400/25 hover:bg-cyan-500/[0.04]"
+               >
+-                <span className="font-mono text-[11px] text-white/80">{entry.agentName}</span>
+-                <span className="font-mono text-[11px] text-white/55">
+-                  {formatCurrency(entry.totals.totalCost)}
++                <span className="truncate font-mono text-[11px] text-white/80">{entry.agentName}</span>
++                <span className="shrink-0 font-mono text-[11px] text-white/60">
++                  {formatCurrency(entry.totals.totalCost)} · {formatNumber(entry.totals.totalTokens)} tok
+                 </span>
+               </button>
+             ))}
+@@ -378,13 +396,13 @@ export function AnalyticsPanel({
+             {usage.aggregates.byModel.slice(0, 6).map((entry) => (
+               <div
+                 key={`${entry.provider ?? "unknown"}:${entry.model ?? "unknown"}`}
+-                className="flex items-center justify-between rounded border border-white/8 bg-black/25 px-3 py-2"
++                className="flex items-center justify-between gap-2 rounded border border-white/8 bg-black/25 px-3 py-2"
+               >
+-                <span className="font-mono text-[11px] text-white/80">
++                <span className="truncate font-mono text-[11px] text-white/80">
+                   {entry.provider ?? "unknown"} / {entry.model ?? "unknown"}
+                 </span>
+-                <span className="font-mono text-[11px] text-white/55">
+-                  {formatCurrency(entry.totals.totalCost)}
++                <span className="shrink-0 font-mono text-[11px] text-white/60">
++                  {formatCurrency(entry.totals.totalCost)} · {formatNumber(entry.totals.totalTokens)} tok
+                 </span>
+               </div>
+             ))}
+diff --git a/src/features/office/hooks/useApprovalMetrics.ts b/src/features/office/hooks/useApprovalMetrics.ts
+index 722b447..007f541 100644
+--- a/src/features/office/hooks/useApprovalMetrics.ts
++++ b/src/features/office/hooks/useApprovalMetrics.ts
+@@ -52,6 +52,37 @@ export const useApprovalMetrics = ({
+     agentsRef.current = agents;
+   }, [agents]);
+ 
++  useEffect(() => {
++    if (!enabled) return;
++    if (status !== "connected") return;
++    let cancelled = false;
++    void (async () => {
++      try {
++        const res = await client.call<{ records?: ApprovalRecord[] }>("approvals.list", {});
++        if (cancelled || !Array.isArray(res?.records) || res.records.length === 0) return;
++        setRecords((current) => {
++          const byId = new Map<string, ApprovalRecord>();
++          for (const item of current) {
++            if (item?.id) byId.set(item.id, item);
++          }
++          for (const item of res.records!) {
++            if (item?.id && !byId.has(item.id)) {
++              byId.set(item.id, item);
++            }
++          }
++          return Array.from(byId.values())
++            .sort((a, b) => b.createdAtMs - a.createdAtMs)
++            .slice(0, MAX_APPROVAL_RECORDS);
++        });
++      } catch {
++        // optional historical approvals RPC
++      }
++    })();
++    return () => {
++      cancelled = true;
++    };
++  }, [client, enabled, status]);
++
+   useEffect(() => {
+     if (!enabled) return;
+     if (status !== "connected") return;
+diff --git a/src/features/office/hooks/useOfficeStandupController.ts b/src/features/office/hooks/useOfficeStandupController.ts
+index 5168c81..2e85f0e 100644
+--- a/src/features/office/hooks/useOfficeStandupController.ts
++++ b/src/features/office/hooks/useOfficeStandupController.ts
+@@ -212,12 +212,22 @@ export const useOfficeStandupController = (params: {
+           err instanceof Error ? err.message : "Failed to refresh standup meeting."
+         );
+       });
+-    }, isMeetingActive(meeting) ? 8000 : 60000);
++    }, isMeetingActive(meeting) ? 4000 : 12000);
+     return () => {
+       window.clearInterval(intervalId);
+     };
+   }, [meeting, refreshMeeting]);
+ 
++  useEffect(() => {
++    const onEnterpriseStandupSync = () => {
++      void refreshMeeting({ allowHidden: true }).catch(() => {});
++    };
++    window.addEventListener("enterprise-office:standup-sync", onEnterpriseStandupSync);
++    return () => {
++      window.removeEventListener("enterprise-office:standup-sync", onEnterpriseStandupSync);
++    };
++  }, [refreshMeeting]);
++
+   useEffect(() => {
+     const handleVisibilityOrFocus = () => {
+       if (!pageVisible()) return;
+diff --git a/src/features/office/hooks/useOfficeUsageAnalyticsViewModel.ts b/src/features/office/hooks/useOfficeUsageAnalyticsViewModel.ts
+index f249e1d..835a4e6 100644
+--- a/src/features/office/hooks/useOfficeUsageAnalyticsViewModel.ts
++++ b/src/features/office/hooks/useOfficeUsageAnalyticsViewModel.ts
+@@ -46,9 +46,47 @@ export const useOfficeUsageAnalyticsViewModel = ({
+     void (async () => {
+       try {
+         const settings = await settingsCoordinator.loadSettings({ maxAgeMs: 30_000 });
+-        if (cancelled || !settings) return;
+-        const analyticsPreference = resolveAnalyticsPreference(settings, gatewayKey);
+-        setBudgets(analyticsPreference.budgets);
++        if (cancelled) return;
++        const analyticsPreference = settings
++          ? resolveAnalyticsPreference(settings, gatewayKey)
++          : defaultStudioAnalyticsPreference();
++        let nextBudgets = analyticsPreference.budgets;
++        const allUnset =
++          nextBudgets.dailySpendLimitUsd === null &&
++          nextBudgets.monthlySpendLimitUsd === null &&
++          nextBudgets.perAgentSoftLimitUsd === null;
++        if (allUnset && status === "connected") {
++          try {
++            const res = await client.call<{
++              budgets?: Partial<StudioAnalyticsBudgetSettings>;
++            }>("budgets.get", {});
++            if (res?.budgets) {
++              nextBudgets = {
++                dailySpendLimitUsd:
++                  typeof res.budgets.dailySpendLimitUsd === "number"
++                    ? res.budgets.dailySpendLimitUsd
++                    : nextBudgets.dailySpendLimitUsd,
++                monthlySpendLimitUsd:
++                  typeof res.budgets.monthlySpendLimitUsd === "number"
++                    ? res.budgets.monthlySpendLimitUsd
++                    : nextBudgets.monthlySpendLimitUsd,
++                perAgentSoftLimitUsd:
++                  typeof res.budgets.perAgentSoftLimitUsd === "number"
++                    ? res.budgets.perAgentSoftLimitUsd
++                    : nextBudgets.perAgentSoftLimitUsd,
++                alertThresholdPct:
++                  typeof res.budgets.alertThresholdPct === "number"
++                    ? res.budgets.alertThresholdPct
++                    : nextBudgets.alertThresholdPct,
++              };
++            }
++          } catch {
++            // keep local preference if gateway does not expose budgets.get
++          }
++        }
++        if (!cancelled) {
++          setBudgets(nextBudgets);
++        }
+       } finally {
+         if (!cancelled) {
+           setSettingsLoaded(true);
+@@ -58,7 +96,7 @@ export const useOfficeUsageAnalyticsViewModel = ({
+     return () => {
+       cancelled = true;
+     };
+-  }, [gatewayUrl, settingsCoordinator]);
++  }, [client, gatewayUrl, settingsCoordinator, status]);
+ 
+   const usage = useUsageAnalytics({
+     client,
+@@ -83,8 +121,11 @@ export const useOfficeUsageAnalyticsViewModel = ({
+         },
+         150
+       );
++      if (status === "connected") {
++        void client.call("budgets.set", { budgets: nextBudgets }).catch(() => {});
++      }
+     },
+-    [gatewayUrl, settingsCoordinator]
++    [client, gatewayUrl, settingsCoordinator, status]
+   );
+ 
+   const updateBudget = useCallback(
+diff --git a/src/features/office/hooks/usePerformanceAnalytics.ts b/src/features/office/hooks/usePerformanceAnalytics.ts
+index e10dfb1..8f80bd7 100644
+--- a/src/features/office/hooks/usePerformanceAnalytics.ts
++++ b/src/features/office/hooks/usePerformanceAnalytics.ts
+@@ -26,10 +26,12 @@ export const usePerformanceAnalytics = ({
+   agents,
+   runLog,
+   approvalByAgent,
++  toolCallsByAgentId,
+ }: {
+   agents: AgentState[];
+   runLog: RunRecord[];
+   approvalByAgent: ApprovalAgentMetrics[];
++  toolCallsByAgentId?: Record<string, number>;
+ }) => {
+   return useMemo(() => {
+     const approvalsByAgentId = new Map(
+@@ -46,8 +48,10 @@ export const usePerformanceAnalytics = ({
+         )
+         .filter((value): value is number => value !== null);
+       const approvalMetrics = approvalsByAgentId.get(agent.agentId);
+-      const toolCalls =
++      const transcriptTools =
+         agent.transcriptEntries?.filter((entry) => entry.kind === "tool").length ?? 0;
++      const telemetryTools = toolCallsByAgentId?.[agent.agentId] ?? 0;
++      const toolCalls = Math.max(transcriptTools, telemetryTools);
+       const successRate =
+         completedRuns.length > 0 ? successfulRuns.length / completedRuns.length : null;
+       const approvalRequestedCount = approvalMetrics?.requestedCount ?? 0;
+@@ -109,5 +113,5 @@ export const usePerformanceAnalytics = ({
+         .sort((left, right) => right.toolCalls - left.toolCalls)
+         .slice(0, 5),
+     };
+-  }, [agents, approvalByAgent, runLog]);
++  }, [agents, approvalByAgent, runLog, toolCallsByAgentId]);
+ };
+diff --git a/src/features/office/hooks/useRunLog.ts b/src/features/office/hooks/useRunLog.ts
+index 1017413..5b4c657 100644
+--- a/src/features/office/hooks/useRunLog.ts
++++ b/src/features/office/hooks/useRunLog.ts
+@@ -75,6 +75,39 @@ export const useRunLog = ({
+     agentsRef.current = agents;
+   }, [agents]);
+ 
++  useEffect(() => {
++    if (!enabled) return;
++    if (status !== "connected") return;
++    let cancelled = false;
++    void (async () => {
++      try {
++        const res = await client.call<{ runs?: RunRecord[] }>("runs.list", {
++          limit: maxRecords,
++        });
++        if (cancelled || !Array.isArray(res?.runs) || res.runs.length === 0) return;
++        setRecords((current) => {
++          const byId = new Map<string, RunRecord>();
++          for (const item of current) {
++            if (item?.runId) byId.set(item.runId, item);
++          }
++          for (const item of res.runs!) {
++            if (item?.runId && !byId.has(item.runId)) {
++              byId.set(item.runId, item);
++            }
++          }
++          return Array.from(byId.values())
++            .sort((a, b) => b.startedAt - a.startedAt)
++            .slice(0, Math.max(1, maxRecords));
++        });
++      } catch {
++        // optional historical hydration RPC
++      }
++    })();
++    return () => {
++      cancelled = true;
++    };
++  }, [client, enabled, maxRecords, status]);
++
+   useEffect(() => {
+     if (!enabled) return;
+     if (status !== "connected") return;
+diff --git a/src/features/office/screens/OfficeScreen.tsx b/src/features/office/screens/OfficeScreen.tsx
+index c8576d3..35b8319 100644
+--- a/src/features/office/screens/OfficeScreen.tsx
++++ b/src/features/office/screens/OfficeScreen.tsx
+@@ -4522,6 +4522,10 @@ export function OfficeScreen({
+           agents={allVisibleAgents}
+           animationState={officeAnimationState}
+           streamingTextByAgentId={streamingTextByAgentId}
++          standupMeeting={standupController.meeting}
++          onStandupArrivalsChange={(arrivedAgentIds) => {
++            void standupController.reportArrivals(arrivedAgentIds);
++          }}
+           renderMode={officeRenderMode}
+           onRenderModeChange={handleOfficeRenderModeChange}
+           onAgentChatSelect={(agentId) => {
+@@ -4538,7 +4542,12 @@ export function OfficeScreen({
+             setJukeboxOpen(true);
+           }}
+           onKanbanInteract={() => {
+-            setKanbanInstallPromptOpen(true);
++            if (kanbanDeskEnabled) {
++              setSidebarOpen(true);
++              setActiveSidebarTab("kanban");
++            } else {
++              setKanbanInstallPromptOpen(true);
++            }
+           }}
+           officeTitle={officeTitle}
+           officeTitleLoaded={officeTitleLoaded}
+@@ -4704,7 +4713,12 @@ export function OfficeScreen({
+             setJukeboxOpen(true);
+           }}
+           onKanbanInteract={() => {
+-            setKanbanInstallPromptOpen(true);
++            if (kanbanDeskEnabled) {
++              setSidebarOpen(true);
++              setActiveSidebarTab("kanban");
++            } else {
++              setKanbanInstallPromptOpen(true);
++            }
+           }}
+           taskBoardAgents={state.agents}
+           taskBoardCardsByStatus={taskBoard.cardsByStatus}
+diff --git a/src/features/pixel-office/PixelOffice2D.tsx b/src/features/pixel-office/PixelOffice2D.tsx
+index 7d2a060..c0012b0 100644
+--- a/src/features/pixel-office/PixelOffice2D.tsx
++++ b/src/features/pixel-office/PixelOffice2D.tsx
+@@ -11,6 +11,7 @@ import { SettingsPanel } from "@/features/office/components/panels/SettingsPanel
+ import type { OfficeRenderMode } from "@/features/office/renderMode";
+ import type { OfficeAgent } from "@/features/retro-office/core/types";
+ import type { OfficeAnimationState } from "@/lib/office/eventTriggers";
++import type { StandupMeeting } from "@/lib/office/standup/types";
+ import type { StudioGatewayAdapterType } from "@/lib/studio/settings";
+ import {
+   buildPixelAgentInputs,
+@@ -32,6 +33,8 @@ export type PixelOffice2DProps = {
+   agents: OfficeAgent[];
+   animationState?: OfficeAnimationState | null;
+   streamingTextByAgentId?: Record<string, string | null>;
++  standupMeeting?: StandupMeeting | null;
++  onStandupArrivalsChange?: (arrivedAgentIds: string[]) => void;
+   renderMode: OfficeRenderMode;
+   onRenderModeChange: (mode: OfficeRenderMode) => void;
+   onAgentChatSelect?: (agentId: string) => void;
+@@ -83,6 +86,8 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
+     agents,
+     animationState = null,
+     streamingTextByAgentId = {},
++    standupMeeting = null,
++    onStandupArrivalsChange,
+     renderMode,
+     onRenderModeChange,
+     onAgentChatSelect,
+@@ -102,6 +107,7 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
+   const bridgeRef = useRef<PixelSceneBridge | null>(null);
+   const [settingsOpen, setSettingsOpen] = useState(false);
+   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
++  const [arrivedIn2dCount, setArrivedIn2dCount] = useState(0);
+ 
+   const map = useMemo(() => buildHermesHqMap(), []);
+ 
+@@ -110,13 +116,25 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
+       agents: [],
+       bubbleTextByAgentId: {},
+       cleaningActive: false,
++      activeMeetingId: null,
+     });
+   }
+   const bridge = bridgeRef.current;
+ 
++  const activeMeeting =
++    standupMeeting &&
++    (standupMeeting.phase === "gathering" || standupMeeting.phase === "in_progress")
++      ? standupMeeting
++      : null;
++
+   const pushBridgeState = useCallback(() => {
+     const nowMs = Date.now();
+-    const inputs = buildPixelAgentInputs({ agents, animationState, nowMs });
++    const inputs = buildPixelAgentInputs({
++      agents,
++      animationState,
++      standupMeeting,
++      nowMs,
++    });
+     const bubbleTextByAgentId: Record<string, string> = {};
+     for (const input of inputs) {
+       // Streamed text shows while the stream flag is up or the run is still
+@@ -127,12 +145,30 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
+         bubbleTextByAgentId[input.id] = text;
+       }
+     }
++    if (activeMeeting) {
++      const speakerId =
++        activeMeeting.currentSpeakerAgentId ||
++        activeMeeting.participantOrder[0] ||
++        null;
++      if (speakerId && !bubbleTextByAgentId[speakerId]) {
++        const speakerCard =
++          activeMeeting.cards.find((card) => card.agentId === speakerId) ?? null;
++        const speech =
++          activeMeeting.phase === "gathering"
++            ? speakerCard?.currentTask || "Mengumpulkan seluruh agen di Ruang Meeting…"
++            : speakerCard?.speech || speakerCard?.currentTask || "";
++        if (speech.trim().length > 0) {
++          bubbleTextByAgentId[speakerId] = speech;
++        }
++      }
++    }
+     bridge.setState({
+       agents: inputs,
+       bubbleTextByAgentId,
+       cleaningActive: isCleaningActive(animationState),
++      activeMeetingId: activeMeeting?.id ?? null,
+     });
+-  }, [agents, animationState, bridge, streamingTextByAgentId]);
++  }, [activeMeeting, agents, animationState, bridge, standupMeeting, streamingTextByAgentId]);
+ 
+   useEffect(() => {
+     pushBridgeState();
+@@ -146,6 +182,13 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
+     bridge.callbacks.onAgentClick = (agentId) => {
+       setContextMenu(null);
+       onAgentChatSelect?.(agentId);
++      if (typeof window !== "undefined") {
++        window.dispatchEvent(
++          new CustomEvent("enterprise-office:agent-selected", {
++            detail: { agentId },
++          }),
++        );
++      }
+     };
+     bridge.callbacks.onAgentContextMenu = (agentId, clientX, clientY) => {
+       setContextMenu({ agentId, x: clientX, y: clientY });
+@@ -155,7 +198,17 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
+       if (kind === "jukebox") onJukeboxInteract?.();
+       if (kind === "kanban") onKanbanInteract?.();
+     };
+-  }, [bridge, onAgentChatSelect, onJukeboxInteract, onKanbanInteract]);
++    bridge.callbacks.onMeetingArrivalsChange = (arrivedAgentIds) => {
++      setArrivedIn2dCount(arrivedAgentIds.length);
++      onStandupArrivalsChange?.(arrivedAgentIds);
++    };
++  }, [
++    bridge,
++    onAgentChatSelect,
++    onJukeboxInteract,
++    onKanbanInteract,
++    onStandupArrivalsChange,
++  ]);
+ 
+   useEffect(() => {
+     let canceled = false;
+@@ -196,23 +249,47 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
+     ? (agents.find((agent) => agent.id === contextMenu.agentId) ?? null)
+     : null;
+ 
+-  const workingCount = agents.filter((agent) => agent.status === "working").length;
+-  const idleCount = agents.filter((agent) => agent.status === "idle").length;
+-  const errorCount = agents.filter((agent) => agent.status === "error").length;
++  const hudInputs = useMemo(
++    () =>
++      buildPixelAgentInputs({
++        agents,
++        animationState,
++        standupMeeting,
++        nowMs: Date.now(),
++      }),
++    [agents, animationState, standupMeeting],
++  );
++  const workingCount = hudInputs.filter((agent) => agent.status === "working").length;
++  const idleCount = hudInputs.filter((agent) => agent.status === "idle").length;
++  const errorCount = hudInputs.filter((agent) => agent.status === "error").length;
++
++  const activeSpeakerCard = useMemo(() => {
++    if (!activeMeeting) return null;
++    const speakerId =
++      activeMeeting.currentSpeakerAgentId || activeMeeting.participantOrder[0] || null;
++    if (!speakerId) return null;
++    return activeMeeting.cards.find((card) => card.agentId === speakerId) ?? null;
++  }, [activeMeeting]);
+ 
+   return (
+-    <div className="relative h-full w-full overflow-hidden bg-[#6fb544]">
++    <div className="relative h-full w-full overflow-hidden bg-[#6fb544]" data-testid="pixel-office-2d-root">
+       <div className="absolute inset-0" ref={rootRef} />
+ 
+-      {/* Office title — top left. */}
+-      <div className="absolute top-3 left-3 z-20 flex items-center gap-2 select-none">
++      {/* Office title & 2D status — placed below the enterprise top bar so they never overlap. */}
++      <div className="absolute top-14 left-14 z-20 flex flex-wrap items-center gap-2 select-none">
+         <div className="rounded-md border border-black/25 bg-[#11131c]/85 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100 backdrop-blur-sm">
+           {officeTitleLoaded ? officeTitle : ""}
+         </div>
+-        <div className="rounded-md border border-black/25 bg-[#11131c]/70 px-2 py-1.5 text-[10px] font-mono text-white/70 backdrop-blur-sm">
++        <div
++          data-testid="pixel-mode-badge"
++          className="rounded-md border border-black/25 bg-[#11131c]/70 px-2 py-1.5 text-[10px] font-mono text-white/80 backdrop-blur-sm"
++        >
+           2D PIXEL
+         </div>
+-        <div className="flex items-center gap-2 rounded-md border border-black/25 bg-[#11131c]/70 px-2 py-1.5 text-[10px] font-mono backdrop-blur-sm">
++        <div
++          data-testid="pixel-agent-counts"
++          className="flex items-center gap-2 rounded-md border border-black/25 bg-[#11131c]/70 px-2 py-1.5 text-[10px] font-mono backdrop-blur-sm"
++        >
+           <span className="text-emerald-300/85">{workingCount} working</span>
+           <span className="text-white/25">·</span>
+           <span className="text-amber-300/85">{idleCount} idle</span>
+@@ -223,6 +300,37 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
+             </>
+           ) : null}
+         </div>
++        {activeMeeting ? (
++          <button
++            type="button"
++            data-testid="pixel-standup-banner"
++            onClick={() => {
++              if (typeof window !== "undefined") {
++                window.dispatchEvent(
++                  new CustomEvent("enterprise-office:command", {
++                    detail: { type: "flyToCanvas", deptId: "meeting_room", x: 145, y: 118 },
++                  }),
++                );
++              }
++            }}
++            className="flex items-center gap-2 rounded-md border border-cyan-400/50 bg-[#071521]/92 px-3 py-1.5 text-[10px] font-mono text-cyan-100 shadow-lg backdrop-blur-sm hover:border-cyan-300"
++            title="Focus 2D Meeting Room"
++          >
++            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
++            <span className="font-semibold uppercase tracking-wider text-cyan-200">
++              {activeMeeting.phase === "gathering" ? "MEETING GATHERING" : "LIVE MEETING"}
++            </span>
++            <span className="text-emerald-300">
++              {Math.max(arrivedIn2dCount, activeMeeting.arrivedAgentIds.length)}/
++              {activeMeeting.participantOrder.length || agents.length} seated
++            </span>
++            {activeSpeakerCard ? (
++              <span className="max-w-[280px] truncate text-white/80">
++                · {activeSpeakerCard.agentName}: {activeSpeakerCard.currentTask}
++              </span>
++            ) : null}
++          </button>
++        ) : null}
+       </div>
+ 
+       {/* Toolbar — top right. */}
+diff --git a/src/features/pixel-office/PixelSceneBridge.ts b/src/features/pixel-office/PixelSceneBridge.ts
+index 913a885..c00b44d 100644
+--- a/src/features/pixel-office/PixelSceneBridge.ts
++++ b/src/features/pixel-office/PixelSceneBridge.ts
+@@ -11,12 +11,15 @@ export type PixelBridgeState = {
+   bubbleTextByAgentId: Record<string, string>;
+   /** True while cleaning cues are active (spawns the janitor NPC). */
+   cleaningActive: boolean;
++  /** Active meeting ID so the 2D camera can pan to the meeting room once on start. */
++  activeMeetingId?: string | null;
+ };
+ 
+ export type PixelBridgeCallbacks = {
+   onAgentClick?: (agentId: string) => void;
+   onAgentContextMenu?: (agentId: string, clientX: number, clientY: number) => void;
+   onStationInteract?: (kind: PixelInteractiveStationKind) => void;
++  onMeetingArrivalsChange?: (arrivedAgentIds: string[]) => void;
+ };
+ 
+ export type PixelSceneBridge = {
+diff --git a/src/features/pixel-office/buildPixelInputs.ts b/src/features/pixel-office/buildPixelInputs.ts
+index 68aa8e8..d757fb4 100644
+--- a/src/features/pixel-office/buildPixelInputs.ts
++++ b/src/features/pixel-office/buildPixelInputs.ts
+@@ -3,37 +3,51 @@
+ 
+ import type { OfficeAgent } from "@/features/retro-office/core/types";
+ import type { OfficeAnimationState } from "@/lib/office/eventTriggers";
++import type { StandupMeeting } from "@/lib/office/standup/types";
+ import type { PixelAgentInput } from "@/features/pixel-office/types";
+ 
+ export const buildPixelAgentInputs = (params: {
+   agents: OfficeAgent[];
+   animationState: OfficeAnimationState | null;
++  standupMeeting?: StandupMeeting | null;
+   nowMs: number;
+ }): PixelAgentInput[] => {
+-  const { agents, animationState, nowMs } = params;
++  const { agents, animationState, standupMeeting = null, nowMs } = params;
++  const activeMeeting =
++    standupMeeting &&
++    (standupMeeting.phase === "gathering" || standupMeeting.phase === "in_progress")
++      ? standupMeeting
++      : null;
++
+   return agents.map((agent) => {
+     const id = agent.id;
+-    const hold: PixelAgentInput["hold"] = !animationState
+-      ? null
+-      : animationState.phoneBoothHoldByAgentId[id]
+-        ? "phone_booth"
+-        : animationState.smsBoothHoldByAgentId[id]
+-          ? "sms_booth"
+-          : animationState.gymHoldByAgentId[id] ||
+-              animationState.skillGymHoldByAgentId[id] ||
+-              (animationState.manualGymUntilByAgentId[id] ?? 0) > nowMs
+-            ? "gym"
+-            : animationState.qaHoldByAgentId[id]
+-              ? "qa_lab"
+-              : animationState.githubHoldByAgentId[id]
+-                ? "github_desk"
+-                : animationState.jukeboxHoldByAgentId[id]
+-                  ? "jukebox"
+-                  : null;
++    const inActiveMeeting = activeMeeting
++      ? activeMeeting.participantOrder.length === 0 ||
++        activeMeeting.participantOrder.includes(id)
++      : false;
++    const hold: PixelAgentInput["hold"] =
++      inActiveMeeting || !animationState
++        ? null
++        : animationState.phoneBoothHoldByAgentId[id]
++          ? "phone_booth"
++          : animationState.smsBoothHoldByAgentId[id]
++            ? "sms_booth"
++            : animationState.gymHoldByAgentId[id] ||
++                animationState.skillGymHoldByAgentId[id] ||
++                (animationState.manualGymUntilByAgentId[id] ?? 0) > nowMs
++              ? "gym"
++              : animationState.qaHoldByAgentId[id]
++                ? "qa_lab"
++                : animationState.githubHoldByAgentId[id]
++                  ? "github_desk"
++                  : animationState.jukeboxHoldByAgentId[id]
++                    ? "jukebox"
++                    : null;
+     // Mirror the 3D scene's desk latch: stay in "working" through desk
+-    // directives and for a short stretch after the last run activity, so
+-    // agents visibly reach their desk and sit even for quick runs.
++    // directives, active meetings, and for a short stretch after the last run
++    // activity, so agents visibly reach their desk or meeting seat.
+     const workingLatched =
++      inActiveMeeting ||
+       agent.status === "working" ||
+       Boolean(animationState?.deskHoldByAgentId[id]) ||
+       (animationState?.workingUntilByAgentId[id] ?? 0) > nowMs;
+@@ -47,9 +61,9 @@ export const buildPixelAgentInputs = (params: {
+       streaming: Boolean(animationState?.streamingByAgentId[id]),
+       thinking: Boolean(animationState?.thinkingByAgentId[id]),
+       awaitingApproval: Boolean(animationState?.awaitingApprovalByAgentId[id]),
+-      dancing: (animationState?.danceUntilByAgentId[id] ?? 0) > nowMs,
++      dancing: !inActiveMeeting && (animationState?.danceUntilByAgentId[id] ?? 0) > nowMs,
+       hold,
+-      standup: Boolean(animationState?.pendingStandupRequest),
++      standup: Boolean(animationState?.pendingStandupRequest) || inActiveMeeting,
+     };
+   });
+ };
+diff --git a/src/features/pixel-office/map/hermesHqMap.ts b/src/features/pixel-office/map/hermesHqMap.ts
+index 7feacbc..be2b87c 100644
+--- a/src/features/pixel-office/map/hermesHqMap.ts
++++ b/src/features/pixel-office/map/hermesHqMap.ts
+@@ -338,13 +338,17 @@ export const buildHermesHqMap = (): PixelOfficeMap => {
+     station("jukebox", 42, 27, "up"),
+     station("kanban", 26, 12, "up"),
+     station("kanban", 27, 12, "up"),
+-    // Meeting seats around the big table.
++    // Meeting seats around the big table (14 seats for full 11+ corporate roster).
+     station("meeting_seat", 10, 5, "down"),
+     station("meeting_seat", 11, 5, "down"),
+     station("meeting_seat", 12, 5, "down"),
++    station("meeting_seat", 9, 5, "down"),
++    station("meeting_seat", 13, 5, "down"),
+     station("meeting_seat", 10, 8, "up"),
+     station("meeting_seat", 11, 8, "up"),
+     station("meeting_seat", 12, 8, "up"),
++    station("meeting_seat", 9, 8, "up"),
++    station("meeting_seat", 13, 8, "up"),
+     station("meeting_seat", 9, 6, "right"),
+     station("meeting_seat", 9, 7, "right"),
+     station("meeting_seat", 13, 6, "left"),
+diff --git a/src/features/pixel-office/scene/PixelOfficeScene.ts b/src/features/pixel-office/scene/PixelOfficeScene.ts
+index 4708d1d..df37bd8 100644
+--- a/src/features/pixel-office/scene/PixelOfficeScene.ts
++++ b/src/features/pixel-office/scene/PixelOfficeScene.ts
+@@ -86,6 +86,17 @@ export const createPixelOfficeScene = (params: {
+   const worldWidth = map.cols * TILE;
+   const worldHeight = map.rows * TILE;
+ 
++  const DEPT_WORLD_TARGETS: Record<string, { tx: number; ty: number; zoom: number }> = {
++    meeting_room: { tx: 11.5, ty: 6.8, zoom: 1.15 },
++    executive: { tx: 34, ty: 5.5, zoom: 1.1 },
++    engineering: { tx: 26.5, ty: 15.5, zoom: 1.0 },
++    qa_lab: { tx: 49, ty: 31.5, zoom: 1.1 },
++    security: { tx: 47, ty: 17.5, zoom: 1.05 },
++    compliance: { tx: 46.5, ty: 7, zoom: 1.05 },
++    operations: { tx: 11.5, ty: 17.5, zoom: 1.05 },
++    lobby: { tx: 25, ty: 32, zoom: 1.0 },
++  };
++
+   class PixelOfficeScene extends PhaserLib.Scene {
+     private sim: PixelSimulation | null = null;
+     private visuals = new Map<string, AgentVisual>();
+@@ -93,6 +104,9 @@ export const createPixelOfficeScene = (params: {
+     private animClock = 0;
+     private dragStart: { x: number; y: number; sx: number; sy: number } | null = null;
+     private dragDistance = 0;
++    private followedAgentId: string | null = null;
++    private lastFocusedMeetingId: string | null = null;
++    private lastMeetingArrivalsKey = "";
+ 
+     constructor() {
+       super("pixel-office-scene");
+@@ -106,7 +120,55 @@ export const createPixelOfficeScene = (params: {
+       this.renderZoneLabels();
+       this.setupCamera();
+       this.setupPointerControls();
++      const onEnterpriseCommand = (event: Event) => {
++        const detail = (event as CustomEvent<Record<string, unknown>>).detail;
++        if (!detail || !this.cameras?.main) return;
++        const camera = this.cameras.main;
++        const cmdType = String(detail.type || "");
++        if (cmdType === "overview") {
++          this.followedAgentId = null;
++          camera.setZoom(this.minZoom());
++          camera.pan(worldWidth / 2, worldHeight / 2, 350, "Sine.easeInOut");
++        } else if (cmdType === "zoomDelta") {
++          const delta = Number(detail.delta) || 0;
++          const step = delta > 0 ? 0.25 : -0.25;
++          camera.setZoom(PhaserLib.Math.Clamp(camera.zoom + step, this.minZoom(), MAX_ZOOM));
++        } else if (cmdType === "flyToCanvas") {
++          this.followedAgentId = null;
++          const deptId = typeof detail.deptId === "string" ? detail.deptId : "";
++          const cx = Number(detail.x);
++          const cy = Number(detail.y);
++          const mapped =
++            (deptId ? DEPT_WORLD_TARGETS[deptId] : undefined) ||
++            (Number.isFinite(cx) && Number.isFinite(cy) && cx <= 300 && cy <= 250
++              ? DEPT_WORLD_TARGETS.meeting_room
++              : undefined);
++          if (mapped) {
++            camera.setZoom(PhaserLib.Math.Clamp(mapped.zoom, this.minZoom(), MAX_ZOOM));
++            camera.pan(mapped.tx * TILE, mapped.ty * TILE, 350, "Sine.easeInOut");
++          } else if (Number.isFinite(cx) && Number.isFinite(cy)) {
++            camera.setZoom(PhaserLib.Math.Clamp(1.0, this.minZoom(), MAX_ZOOM));
++            camera.pan(
++              PhaserLib.Math.Clamp((cx / 1800) * worldWidth, TILE * 4, worldWidth - TILE * 4),
++              PhaserLib.Math.Clamp((cy / 1200) * worldHeight, TILE * 4, worldHeight - TILE * 4),
++              350,
++              "Sine.easeInOut",
++            );
++          }
++        } else if (cmdType === "followAgent") {
++          this.followedAgentId =
++            typeof detail.agentId === "string" && detail.agentId.trim()
++              ? detail.agentId.trim()
++              : null;
++        }
++      };
++      if (typeof window !== "undefined") {
++        window.addEventListener("enterprise-office:command", onEnterpriseCommand);
++      }
+       this.events.once(PhaserLib.Scenes.Events.SHUTDOWN, () => {
++        if (typeof window !== "undefined") {
++          window.removeEventListener("enterprise-office:command", onEnterpriseCommand);
++        }
+         this.visuals.clear();
+         this.sim = null;
+       });
+@@ -116,6 +178,17 @@ export const createPixelOfficeScene = (params: {
+       if (!this.sim) return;
+       this.animClock += delta;
+       const state = bridge.getState();
++      if (state.activeMeetingId && state.activeMeetingId !== this.lastFocusedMeetingId) {
++        this.lastFocusedMeetingId = state.activeMeetingId;
++        this.followedAgentId = null;
++        const target = DEPT_WORLD_TARGETS.meeting_room;
++        this.cameras.main.setZoom(
++          PhaserLib.Math.Clamp(target.zoom, this.minZoom(), MAX_ZOOM),
++        );
++        this.cameras.main.pan(target.tx * TILE, target.ty * TILE, 400, "Sine.easeInOut");
++      } else if (!state.activeMeetingId) {
++        this.lastFocusedMeetingId = null;
++      }
+       const poses = this.sim.tick({
+         inputs: state.agents,
+         nowMs: Date.now(),
+@@ -123,6 +196,15 @@ export const createPixelOfficeScene = (params: {
+         cleaningActive: state.cleaningActive,
+       });
+       this.syncAgents(poses);
++      if (this.followedAgentId && !this.dragStart) {
++        const followed = this.visuals.get(this.followedAgentId);
++        if (followed) {
++          this.cameras.main.centerOn(
++            followed.container.x,
++            followed.container.y - CHARACTER_HEIGHT / 2,
++          );
++        }
++      }
+     }
+ 
+     // -------------------------------------------------------------------
+@@ -288,6 +370,9 @@ export const createPixelOfficeScene = (params: {
+         const dx = pointer.x - this.dragStart.x;
+         const dy = pointer.y - this.dragStart.y;
+         this.dragDistance = Math.max(this.dragDistance, Math.hypot(dx, dy));
++        if (this.dragDistance > 6) {
++          this.followedAgentId = null;
++        }
+         camera.setScroll(
+           this.dragStart.sx - dx / camera.zoom,
+           this.dragStart.sy - dy / camera.zoom,
+@@ -382,6 +467,16 @@ export const createPixelOfficeScene = (params: {
+         visual.overlay.destroy();
+         this.visuals.delete(id);
+       }
++
++      const arrivedMeetingIds = poses
++        .filter((pose) => pose.activity === "meeting" && !pose.moving && pose.id !== JANITOR_ID)
++        .map((pose) => pose.id)
++        .sort();
++      const arrivalsKey = arrivedMeetingIds.join(",");
++      if (arrivalsKey !== this.lastMeetingArrivalsKey) {
++        this.lastMeetingArrivalsKey = arrivalsKey;
++        bridge.callbacks.onMeetingArrivalsChange?.(arrivedMeetingIds);
++      }
+     }
+ 
+     private createVisual(id: string, name: string): AgentVisual {
+diff --git a/src/features/retro-office/RetroOffice3D.tsx b/src/features/retro-office/RetroOffice3D.tsx
+index decb6ea..bf96c73 100644
+--- a/src/features/retro-office/RetroOffice3D.tsx
++++ b/src/features/retro-office/RetroOffice3D.tsx
+@@ -2098,6 +2098,23 @@ function useAgentTick(
+           frame: agent.frame + 1,
+         };
+       }
++      if (
++        agent.interactionTarget === "meeting_room" &&
++        agent.state !== "sitting" &&
++        (agent.path?.length ?? 0) === 0 &&
++        Math.hypot(agent.x - agent.targetX, agent.y - agent.targetY) >= 15
++      ) {
++        const planned = astar(agent.x, agent.y, agent.targetX, agent.targetY, grid);
++        return {
++          ...agent,
++          path:
++            planned.length > 0
++              ? planned
++              : [{ x: agent.targetX, y: agent.targetY }],
++          state: "walking" as const,
++          frame: agent.frame + 1,
++        };
++      }
+       const baseSpeed = agent.walkSpeed ?? WALK_SPEED;
+       const speed =
+         agent.status === "working" && agent.state !== "sitting"
+diff --git a/src/features/retro-office/core/geometry.ts b/src/features/retro-office/core/geometry.ts
+index 3850155..f45f11e 100644
+--- a/src/features/retro-office/core/geometry.ts
++++ b/src/features/retro-office/core/geometry.ts
+@@ -110,7 +110,7 @@ export const getItemBaseSize = (item: FurnitureItem) => {
+  */
+ export const ITEM_METADATA: Record<string, { blocksNavigation: boolean; navPadding?: number }> = {
+   // ── structural ────────────────────────────────────────────────────────────
+-  wall:            { blocksNavigation: true  },
++  wall:            { blocksNavigation: true, navPadding: 2 },
+   door:            { blocksNavigation: false }, // passable
+   // ── seating / lounge ──────────────────────────────────────────────────────
+   chair:           { blocksNavigation: false }, // passable / agents sit on them
+@@ -121,7 +121,7 @@ export const ITEM_METADATA: Record<string, { blocksNavigation: boolean; navPaddi
+   desk_cubicle:    { blocksNavigation: true, navPadding: 0 }, // blocks nav with zero padding (tight to desk body)
+   executive_desk:  { blocksNavigation: true  },
+   // ── tables ────────────────────────────────────────────────────────────────
+-  round_table:     { blocksNavigation: true  },
++  round_table:     { blocksNavigation: true, navPadding: 0 },
+   table_rect:      { blocksNavigation: true  },
+   pingpong:        { blocksNavigation: true  },
+   // ── storage / shelving ────────────────────────────────────────────────────
+diff --git a/src/features/retro-office/core/navigation.ts b/src/features/retro-office/core/navigation.ts
+index 19d9d13..fe8bb61 100644
+--- a/src/features/retro-office/core/navigation.ts
++++ b/src/features/retro-office/core/navigation.ts
+@@ -101,8 +101,17 @@ export function buildNavGrid(furniture: FurnitureItem[]): NavGrid {
+     const c2 = Math.min(GRID_COLS - 1, Math.floor(x2 / GRID_CELL));
+     const r1 = Math.max(0, Math.floor(y1 / GRID_CELL));
+     const r2 = Math.min(GRID_ROWS - 1, Math.floor(y2 / GRID_CELL));
++    const isLargeRoundTable = item.type === "round_table" && (item.r ?? 50) >= 70;
++    const centerX = bounds.x + bounds.w / 2;
++    const centerY = bounds.y + bounds.h / 2;
++    const blockRadius = (item.r ?? 50) - 8;
+     for (let row = r1; row <= r2; row += 1) {
+       for (let column = c1; column <= c2; column += 1) {
++        if (isLargeRoundTable) {
++          const cx = column * GRID_CELL + GRID_CELL / 2;
++          const cy = row * GRID_CELL + GRID_CELL / 2;
++          if (Math.hypot(cx - centerX, cy - centerY) > blockRadius) continue;
++        }
+         grid[row * GRID_COLS + column] = 1;
+       }
+     }
+@@ -379,17 +388,20 @@ export const getMeetingSeatLocations = (items: FurnitureItem[]) => {
+   const centerY =
+     chairCenters.reduce((sum, chair) => sum + chair.y, 0) / chairCenters.length;
+ 
+-  return chairCenters.map((chair) => {
+-    const offsetX = chair.x - centerX;
+-    const offsetY = chair.y - centerY;
+-    const distance = Math.hypot(offsetX, offsetY) || 1;
+-    const seatPullback = 14;
+-    return {
+-      x: chair.x + (offsetX / distance) * seatPullback,
+-      y: chair.y + (offsetY / distance) * seatPullback,
+-      facing: Math.atan2(centerX - chair.x, centerY - chair.y),
+-    };
+-  });
++  const grid = buildNavGrid(items);
++  return chairCenters
++    .map((chair) => {
++      const offsetX = chair.x - centerX;
++      const offsetY = chair.y - centerY;
++      const distance = Math.hypot(offsetX, offsetY) || 1;
++      const seatPullback = 18;
++      return {
++        x: chair.x + (offsetX / distance) * seatPullback,
++        y: chair.y + (offsetY / distance) * seatPullback,
++        facing: Math.atan2(centerX - chair.x, centerY - chair.y),
++      };
++    })
++    .filter((seat) => astar(400, 350, seat.x, seat.y, grid).length > 0);
+ };
+ 
+ export const getGymWorkoutLocations = (
+@@ -534,10 +546,19 @@ export const getQaLabStations = (
+     });
+ 
+ export const MEETING_OVERFLOW_LOCATIONS = [
+-  { x: 18, y: 118, facing: Math.PI / 2 },
+-  { x: 270, y: 118, facing: -Math.PI / 2 },
+-  { x: 145, y: 24, facing: Math.PI },
+-  { x: 145, y: 220, facing: 0 },
++  { x: 145, y: 242, facing: Math.PI },
++  { x: 192, y: 236, facing: Math.atan2(140 - 192, 140 - 236) },
++  { x: 98, y: 242, facing: Math.atan2(140 - 98, 140 - 242) },
++  { x: 226, y: 214, facing: Math.atan2(140 - 226, 140 - 214) },
++  { x: 118, y: 236, facing: Math.atan2(140 - 118, 140 - 236) },
++  { x: 236, y: 238, facing: Math.atan2(140 - 236, 140 - 238) },
++  { x: 88, y: 258, facing: Math.atan2(140 - 88, 140 - 258) },
++  { x: 122, y: 268, facing: Math.atan2(140 - 122, 140 - 268) },
++  { x: 168, y: 268, facing: Math.atan2(140 - 168, 140 - 268) },
++  { x: 212, y: 262, facing: Math.atan2(140 - 212, 140 - 262) },
++  { x: 96, y: 282, facing: Math.atan2(140 - 96, 140 - 282) },
++  { x: 145, y: 286, facing: Math.PI },
++  { x: 198, y: 282, facing: Math.atan2(140 - 198, 140 - 282) },
+ ];
+ 
+ export const resolveDeskIndexForItem = (
+diff --git a/src/features/retro-office/systems/NavigationSystem.tsx b/src/features/retro-office/systems/NavigationSystem.tsx
+index 74987f1..23fd53f 100644
+--- a/src/features/retro-office/systems/NavigationSystem.tsx
++++ b/src/features/retro-office/systems/NavigationSystem.tsx
+@@ -48,7 +48,11 @@ export function applyAgentCollisionBumps({
+     // huddle: circle slots are spaced wider than the bump distance, and a
+     // bump's escape-reroute would trap approaching members in a loop of
+     // freeze, escape, and walk-back at the circle's edge.
+-    if (moved[i].conversationGroupId !== undefined) continue;
++    if (
++      moved[i].conversationGroupId !== undefined ||
++      moved[i].interactionTarget === "meeting_room"
++    )
++      continue;
+     if (moved[i].bumpedUntil !== undefined) continue;
+     if ((moved[i].collisionCooldownUntil ?? 0) > now) continue;
+     let sx = 0,
+diff --git a/src/lib/office/deskDirectives.ts b/src/lib/office/deskDirectives.ts
+index e3e8787..9e9bbe9 100644
+--- a/src/lib/office/deskDirectives.ts
++++ b/src/lib/office/deskDirectives.ts
+@@ -84,6 +84,8 @@ const resolveOfficeInteractionDirectiveFromNormalized = (
+     /\bback\s+to\s+(?:your|the)\s+desk\b/,
+     /\bgo\s+sit\s+(?:at|on)\s+(?:your|the)\s+desk\b/,
+     /\bsit\s+(?:at|on)\s+(?:your|the)\s+desk\b/,
++    /\bkembali\s+ke\s+meja\b/,
++    /\bduduk\s+di\s+meja\b/,
+   ];
+   const isDeskCommand = deskCommandPatterns.some((pattern) =>
+     pattern.test(normalized),
+@@ -282,6 +284,14 @@ const resolveOfficeStandupDirectiveFromNormalized = (
+     /\bstart\s+(?:the\s+)?standup\b/,
+     /\bstart\s+(?:the\s+)?scrum\b/,
+     /\bhave\s+(?:a\s+)?meeting\b/,
++    /\bkumpulkan\s+(?:semua|seluruh|tim|agen|orang)\b/,
++    /\b(?:mengelompokkan|kelompokkan)\s+(?:semua|seluruh|tim|agen|orang)\b/,
++    /\b(?:ke|di)\s*ruang\s*meet(?:ing)?\b/,
++    /\bmeeting\s+room\b/,
++    /\bmeet(?:ing)?\s+sekarang\b/,
++    /\badakan\s+(?:meeting|rapat)\b/,
++    /\bmulai\s+(?:meeting|rapat)\b/,
++    /\brapat\s+sekarang\b/,
+   ];
+   return standupIntentPatterns.some((pattern) => pattern.test(normalized))
+     ? "standup"
+diff --git a/tests/unit/pixelOfficeInputs.test.ts b/tests/unit/pixelOfficeInputs.test.ts
+index aad453f..b3c3d18 100644
+--- a/tests/unit/pixelOfficeInputs.test.ts
++++ b/tests/unit/pixelOfficeInputs.test.ts
+@@ -149,6 +149,48 @@ describe("buildPixelAgentInputs", () => {
+     expect(input.awaitingApproval).toBe(true);
+     expect(input.standup).toBe(true);
+   });
++
++  it("activates 2D meeting mode for all 11 participants when standupMeeting is gathering or in_progress", () => {
++    const state = emptyAnimationState();
++    state.qaHoldByAgentId = { a1: true };
++    const roster = Array.from({ length: 11 }, (_, idx) => agent(`a${idx + 1}`, "idle"));
++    const activeMeeting = {
++      id: "mtg-11",
++      trigger: "manual" as const,
++      phase: "in_progress" as const,
++      scheduledFor: null,
++      startedAt: "2026-11-20T00:00:00.000Z",
++      updatedAt: "2026-11-20T00:00:00.000Z",
++      completedAt: null,
++      currentSpeakerAgentId: "a1",
++      speakerStartedAt: "2026-11-20T00:00:00.000Z",
++      speakerDurationMs: 8000,
++      participantOrder: roster.map((r) => r.id),
++      arrivedAgentIds: roster.map((r) => r.id),
++      cards: [],
++    };
++    const inputs = buildPixelAgentInputs({
++      agents: roster,
++      animationState: state,
++      standupMeeting: activeMeeting,
++      nowMs: 1_000,
++    });
++    expect(inputs).toHaveLength(11);
++    for (const item of inputs) {
++      expect(item.standup).toBe(true);
++      expect(item.status).toBe("working");
++      expect(item.hold).toBeNull();
++    }
++
++    const completedInputs = buildPixelAgentInputs({
++      agents: roster,
++      animationState: state,
++      standupMeeting: { ...activeMeeting, phase: "complete" },
++      nowMs: 1_000,
++    });
++    expect(completedInputs[0].standup).toBe(false);
++    expect(completedInputs[0].hold).toBe("qa_lab");
++  });
+ });
+ 
+ describe("isCleaningActive", () => {
+diff --git a/tests/unit/pixelOfficeSim.test.ts b/tests/unit/pixelOfficeSim.test.ts
+index f3b2e82..e73879e 100644
+--- a/tests/unit/pixelOfficeSim.test.ts
++++ b/tests/unit/pixelOfficeSim.test.ts
+@@ -205,6 +205,32 @@ describe("pixel office simulation", () => {
+     expect(stationIds.size).toBe(inputs.length);
+   });
+ 
++  it("gathers all 11 corporate agents at 11 distinct seats inside the 2D Meeting Room", () => {
++    const map = buildHermesHqMap();
++    const sim = createPixelSimulation(map);
++    const clock = makeClock();
++    const inputs = Array.from({ length: 11 }, (_, idx) =>
++      makeInput(`corp-agent-${idx + 1}`, { standup: true }),
++    );
++
++    const poses = runTicks(sim, clock, inputs, 1800);
++    expect(poses).toHaveLength(11);
++    const stationIds = new Set<string>();
++    for (const pose of poses) {
++      expect(pose.activity).toBe("meeting");
++      expect(pose.moving).toBe(false);
++      expect(pose.stationId).not.toBeNull();
++      const station = map.stations.find((slot) => slot.id === pose.stationId);
++      expect(station?.kind).toBe("meeting_seat");
++      expect(station!.tx).toBeGreaterThanOrEqual(6);
++      expect(station!.tx).toBeLessThanOrEqual(16);
++      expect(station!.ty).toBeGreaterThanOrEqual(2);
++      expect(station!.ty).toBeLessThanOrEqual(11);
++      if (pose.stationId) stationIds.add(pose.stationId);
++    }
++    expect(stationIds.size).toBe(11);
++  });
++
+   it("makes an idle agent visit a station, pause, then pick a different one", () => {
+     const map = buildHermesHqMap();
+     const sim = createPixelSimulation(map);

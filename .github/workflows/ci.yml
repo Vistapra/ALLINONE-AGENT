@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Minimum permissions by default; jobs below don't need write access to anything.
+permissions:
+  contents: read
+
+jobs:
+  hermes3d:
+    name: Hermes3D typecheck + build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/hermes3d
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      # Real, verified commands (Phase 49) — not guessed script names.
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm run build
+
+  office-bridge:
+    name: Office Bridge install + smoke-load
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/office-bridge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - run: npm install
+      # Smoke-load only: require() the entry point and exit immediately, never bind a port
+      # or start the real server in CI. On Node 22+ this should succeed; on < 22 it fails
+      # with ERR_UNKNOWN_BUILTIN_MODULE (node:sqlite) by design — see INSTALLATION.md.
+      - name: Smoke-load server.js (no port bind)
+        run: |
+          node -e "require('./server.js'); console.log('office-bridge module loaded cleanly'); process.exit(0);"
+        env:
+          # Deliberately unset/fixture value, never a real credential — CI must never need
+          # or handle a real Telegram/API credential (none exist for this repo; rotation of
+          # the reference install's old ones is a separate, owner-only action).
+          ALLINONE_TELEGRAM_OWNER_ID: ''
+
+  python-integration:
+    name: Python integration package smoke-import
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # integration/ is stdlib-only by design (verified via import-surface scan, Phase 49) —
+      # no requirements.txt is expected or needed. PYTHONPATH=repo root matches how
+      # install.ps1 / ai-platform actually invoke it (see PHASE-49 part 1 report).
+      - run: PYTHONPATH="$PWD" python -c "import integration.platform_cli; print('integration package imports cleanly')"
+
+  powershell-parse-validate:
+    name: PowerShell syntax validation (parse-only, no execution)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse every .ps1/.psm1 with the real PowerShell AST parser
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path . -Recurse -Include *.ps1,*.psm1 -File
+          $failed = @()
+          foreach ($f in $files) {
+            $tokens = $null
+            $errors = $null
+            $null = [System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$tokens, [ref]$errors)
+            if ($errors) {
+              $failed += $f.FullName
+              Write-Host "::error file=$($f.FullName)::$($errors -join '; ')"
+            }
+          }
+          Write-Host "Checked $($files.Count) PowerShell files."
+          if ($failed.Count -gt 0) {
+            Write-Host "FAILED: $($failed.Count) file(s) did not parse."
+            exit 1
+          }
+
+  dotnet-build:
+    name: .NET launcher build (cross-platform compile check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet build automation/launchers/OfficeServiceLauncher.csproj
+      - run: dotnet build automation/launchers/PaperclipServiceLauncher.csproj
+      - run: dotnet build automation/updater/CuaDriverProxy.csproj
+      # Note: these projects target net8.0 and compile fine here, but they call Windows-only
+      # APIs (System.ServiceProcess, WMI, etc. - see automation/launchers/*.cs) and will not
+      # *run* correctly off Windows. This job only proves they compile; windows-build.yml
+      # covers the Windows-specific build + the scripts that actually call Windows cmdlets.

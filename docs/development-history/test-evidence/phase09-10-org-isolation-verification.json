@@ -1,0 +1,37 @@
+{
+  "total_org_roles_provisioned": 11,
+  "wave1_active_roles": [
+    "ceo_agent",
+    "backend_developer",
+    "devops_engineer",
+    "qa_engineer",
+    "security_lead",
+    "security_reviewer"
+  ],
+  "wave2_standby_roles": [
+    "cto_agent",
+    "frontend_developer",
+    "findings_analyst",
+    "remediation_reviewer",
+    "compliance_reporter"
+  ],
+  "org_hierarchy_returned": true,
+  "instructions_verified": true,
+  "security_reviewer_run": {
+    "id": "3a129d25-e335-4a5c-b6b2-c75c667352bc",
+    "status": "succeeded",
+    "exit_code": 0
+  },
+  "qa_engineer_run": {
+    "id": "f2d45c73-446c-4493-9e32-2b1deb1ede0f",
+    "status": "succeeded",
+    "exit_code": 0
+  },
+  "security_reviewer_sessions": 1,
+  "qa_engineer_sessions": 1,
+  "role_sessions_disjoint": true,
+  "workspace_lock_conflict_blocked": true,
+  "parallel_git_worktree_isolated": true,
+  "owner_sessions_untouched": true,
+  "owner_memory_untouched": true
+}

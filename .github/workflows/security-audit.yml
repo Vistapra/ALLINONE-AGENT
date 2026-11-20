@@ -1,0 +1,57 @@
+name: Security Audit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  detect-secrets:
+    name: detect-secrets scan (second-layer defense, not sufficient alone)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install detect-secrets==1.5.0
+      # KNOWN LIMITATION, confirmed in this project's own audit history (see
+      # PHASE-41-secret-audit.md): detect-secrets returned ZERO findings when run directly
+      # against a folder manually confirmed to contain real short/low-entropy credentials
+      # (JWT secrets, API keys). Treat a clean run here as a floor, not a guarantee — manual
+      # review by path/key-name convention (see PUBLICATION-EXCLUSIONS.md) is the real
+      # safety net, and that discipline must not be dropped just because this job is green.
+      - run: detect-secrets scan --all-files > /tmp/secrets-baseline.json
+      - name: Fail if any secret-shaped finding exists
+        run: |
+          python -c "
+          import json, sys
+          with open('/tmp/secrets-baseline.json') as f:
+              data = json.load(f)
+          results = data.get('results', {})
+          total = sum(len(v) for v in results.values())
+          print(f'detect-secrets found {total} candidate(s) across {len(results)} file(s).')
+          if total:
+              for path, findings in results.items():
+                  print(f'  {path}: {len(findings)} finding(s)')
+              sys.exit(1)
+          "
+
+  gitignore-sanity:
+    name: Confirm no generated/runtime paths are tracked
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if node_modules/.next/bin/obj/__pycache__ are ever tracked by git
+        run: |
+          set -e
+          MATCHES=$(git ls-files | grep -E '(^|/)(node_modules|\.next|bin|obj|__pycache__)/' || true)
+          if [ -n "$MATCHES" ]; then
+            echo "Tracked generated/build paths found (should be .gitignore'd):"
+            echo "$MATCHES"
+            exit 1
+          fi
+          echo "Clean: no generated/build directories are tracked."

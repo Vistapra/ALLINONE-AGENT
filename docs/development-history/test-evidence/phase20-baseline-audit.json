@@ -1,0 +1,208 @@
+{
+  "integration_files": [
+    "__pycache__",
+    "findings_engine.py",
+    "hermes_worker_factory.py",
+    "maintenance_coordinator.py",
+    "org_provisioner.py",
+    "paperclip_client.py",
+    "platform_cli.py",
+    "vulnclaw_defensive.py",
+    "workflow_engine.py"
+  ],
+  "runtime_bins": [
+    "PaperclipServiceLauncher.exe",
+    "ai-platform.cmd",
+    "node26.cmd",
+    "npm26.cmd",
+    "paperclipai.cmd",
+    "pnpm12.cmd"
+  ],
+  "hermes_profiles": [
+    "pcbackenddeveloper",
+    "pcceoagent",
+    "pccompliancereporter",
+    "pcctoagent",
+    "pcdevopsengineer",
+    "pcfindingsanalyst",
+    "pcfrontenddeveloper",
+    "pcphase06localworker",
+    "pcprobe",
+    "pcqaengineer",
+    "pcremediationreviewer",
+    "pcsecuritylead",
+    "pcsecurityreviewer"
+  ],
+  "system_node": "v20.16.0",
+  "node26_shim": "v26.12.1",
+  "npm26_shim": "12.2.2",
+  "pnpm12_shim": "12.15.0",
+  "pnpm_store_path": "C:\\Users\\<owner-username>\\AppData\\Local\\pnpm\\store\\v11",
+  "git_version": "git version 2.24.0.windows.2",
+  "python_version": "Python 3.14.9",
+  "browsers": {
+    "msedge": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    "chrome": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+  },
+  "credential_rotation_status": {
+    "telegram_bot_token_rotated_since_chat_exposure": false,
+    "custom_api_key_rotated_since_chat_exposure": false
+  },
+  "paperclip_live": {
+    "company_id": "0000000b-0000-4000-8000-00000000000b",
+    "company_name": "Unified AI Engineering & Operations",
+    "agents_count": 11,
+    "active_agents": [
+      "CEO Agent",
+      "QA Engineer",
+      "Security Reviewer",
+      "Backend Developer"
+    ],
+    "paused_agents": [
+      "Remediation Reviewer",
+      "Security Lead",
+      "DevOps Engineer",
+      "Report & Compliance Agent",
+      "Findings Analyst",
+      "Frontend Developer",
+      "CTO Agent"
+    ],
+    "agents": [
+      {
+        "id": "00000002-0000-4000-8000-000000000002",
+        "name": "Remediation Reviewer",
+        "role": "security",
+        "title": "Security Remediation & Regression Verifier",
+        "status": "paused",
+        "lifecycleState": "paused",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000003-0000-4000-8000-000000000003"
+      },
+      {
+        "id": "00000004-0000-4000-8000-000000000004",
+        "name": "CEO Agent",
+        "role": "ceo",
+        "title": "Chief Executive Officer \u2014 Planning & Delegation",
+        "status": "idle",
+        "lifecycleState": "ready",
+        "adapterType": "hermes_local",
+        "reportsTo": null
+      },
+      {
+        "id": "0000000c-0000-4000-8000-00000000000c",
+        "name": "QA Engineer",
+        "role": "qa",
+        "title": "Lead Quality Assurance & Regression Engineer",
+        "status": "idle",
+        "lifecycleState": "ready",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000004-0000-4000-8000-000000000004"
+      },
+      {
+        "id": "00000003-0000-4000-8000-000000000003",
+        "name": "Security Lead",
+        "role": "security",
+        "title": "Defensive Security Architecture Lead",
+        "status": "paused",
+        "lifecycleState": "paused",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000004-0000-4000-8000-000000000004"
+      },
+      {
+        "id": "0000000a-0000-4000-8000-00000000000a",
+        "name": "Security Reviewer",
+        "role": "security",
+        "title": "Defensive Code & Findings Security Reviewer",
+        "status": "idle",
+        "lifecycleState": "ready",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000004-0000-4000-8000-000000000004"
+      },
+      {
+        "id": "00000005-0000-4000-8000-000000000005",
+        "name": "DevOps Engineer",
+        "role": "devops",
+        "title": "Senior DevOps & Runtime Diagnostics Engineer",
+        "status": "paused",
+        "lifecycleState": "paused",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000006-0000-4000-8000-000000000006"
+      },
+      {
+        "id": "00000008-0000-4000-8000-000000000008",
+        "name": "Report & Compliance Agent",
+        "role": "pm",
+        "title": "Audit Evidence & Acceptance Compliance Specialist",
+        "status": "paused",
+        "lifecycleState": "paused",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000004-0000-4000-8000-000000000004"
+      },
+      {
+        "id": "00000007-0000-4000-8000-000000000007",
+        "name": "Findings Analyst",
+        "role": "researcher",
+        "title": "Security Findings Triage & Deduplication Analyst",
+        "status": "paused",
+        "lifecycleState": "paused",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000003-0000-4000-8000-000000000003"
+      },
+      {
+        "id": "00000009-0000-4000-8000-000000000009",
+        "name": "Frontend Developer",
+        "role": "designer",
+        "title": "Senior Frontend & UI Engineer",
+        "status": "paused",
+        "lifecycleState": "verifying",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000006-0000-4000-8000-000000000006"
+      },
+      {
+        "id": "00000006-0000-4000-8000-000000000006",
+        "name": "CTO Agent",
+        "role": "cto",
+        "title": "Chief Technology Officer \u2014 Architecture & Standards",
+        "status": "paused",
+        "lifecycleState": "paused",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000004-0000-4000-8000-000000000004"
+      },
+      {
+        "id": "00000001-0000-4000-8000-000000000001",
+        "name": "Backend Developer",
+        "role": "engineer",
+        "title": "Senior Full-Stack / Backend Software Engineer",
+        "status": "idle",
+        "lifecycleState": "ready",
+        "adapterType": "hermes_local",
+        "reportsTo": "00000004-0000-4000-8000-000000000004"
+      }
+    ],
+    "projects_count": 4,
+    "projects": [
+      {
+        "id": "1ee658db-f022-4087-b856-7bdb171b8389",
+        "name": "Acceptance Invoice App",
+        "status": "in_progress"
+      },
+      {
+        "id": "4441ac30-4635-4b28-a73f-21edb448b44c",
+        "name": "Phase 06 Smoke Project",
+        "status": "in_progress"
+      },
+      {
+        "id": "5c7abfb7-ea19-4fef-a991-bb1865e09801",
+        "name": "Phase 10 Isolation Lab",
+        "status": "in_progress"
+      },
+      {
+        "id": "ac2e7ed7-93fb-4277-96ed-91f60ef41c3d",
+        "name": "Demo Order Service",
+        "status": "in_progress"
+      }
+    ],
+    "issues_count": 46,
+    "live_runs_count": 0
+  }
+}

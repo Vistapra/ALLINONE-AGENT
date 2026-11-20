@@ -1,0 +1,14 @@
+{
+  "name": "office-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Real-time synchronization bridge between the 3D/2D office, Paperclip, and VulnClaw. Custom code, not vendored from any upstream project.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

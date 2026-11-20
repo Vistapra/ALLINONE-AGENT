@@ -1,0 +1,10 @@
+{
+  "role_slug": "frontend_developer",
+  "profile_id": "pcfrontenddeveloper",
+  "role_title": "Senior Frontend & UI Engineer",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcfrontenddeveloper",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\frontend_developer\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file,terminal"
+}

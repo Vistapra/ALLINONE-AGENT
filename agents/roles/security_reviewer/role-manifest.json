@@ -1,0 +1,10 @@
+{
+  "role_slug": "security_reviewer",
+  "profile_id": "pcsecurityreviewer",
+  "role_title": "Defensive Code & Findings Security Reviewer",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcsecurityreviewer",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\security_reviewer\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file"
+}

@@ -1,0 +1,10 @@
+{
+  "role_slug": "qa_engineer",
+  "profile_id": "pcqaengineer",
+  "role_title": "Lead Quality Assurance & Regression Engineer",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcqaengineer",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\qa_engineer\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file,terminal"
+}

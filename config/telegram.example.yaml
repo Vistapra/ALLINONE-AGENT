@@ -1,0 +1,56 @@
+# ALLINONE-AGENT — Telegram integration (EXAMPLE)
+#
+# Schema derived from the real single-consumer architecture documented in
+# docs/legacy-platform-docs/TELEGRAM-COMMANDS.md and TELEGRAM-OFFICE-SYNC.md — NOT from the
+# reference installation's live values. Every value below is a synthetic placeholder.
+#
+# IMPORTANT: this file is NOT read directly by the platform today (the real values live in
+# config\platform.local.env as TELEGRAM_BOT_TOKEN / TELEGRAM_OWNER_ID — see
+# platform.local.env.example). This YAML exists as a human-readable reference for what those
+# two values mean and how they're used, and as a template for a future structured-config
+# migration. Do not create a code path that reads this .yaml file until that migration happens.
+#
+# Telegram is OPTIONAL. Skip this entirely to run the 3D/2D office without it.
+
+telegram:
+  enabled: false
+
+  # Create your OWN bot via @BotFather (search "BotFather" in Telegram, /newbot).
+  # If a token was ever pasted into a chat log, chat history, or committed to git before,
+  # rotate it in BotFather FIRST — never reuse an exposed token for a new installation.
+  bot_token: "YOUR_TELEGRAM_BOT_TOKEN_HERE"  # format: "123456789:AAExampleExampleExampleExampleExample"
+
+  # Your own numeric Telegram user ID (NOT your @username). Get it from a bot like
+  # @userinfobot, or from Telegram's own "Copy User ID" in your profile (Settings > long-press
+  # your name). This becomes the ONLY authorized owner for platform commands — every other
+  # caller_id is rejected (fail-closed), matching the reference implementation's auth model.
+  owner_id: 0000000000  # placeholder — replace with YOUR numeric ID, never share this value publicly
+
+  # Single-polling-consumer design (matches the reference \Hermes_Gateway architecture): exactly
+  # one process should call Telegram's getUpdates long-poll. Running two instances with the same
+  # bot_token causes HTTP 409 Conflict. Leave this true unless you know you're changing the
+  # gateway topology.
+  single_consumer: true
+
+  # Outbound notifications (task completion, alerts) pass through a redaction filter before
+  # being sent — never disable this for a real bot token.
+  redact_outbound_secrets: true
+
+  # Rate limiting / safety
+  rate_limit_per_minute: 20
+
+  # Which platform commands this bot responds to — mirrors the documented command set. Disable
+  # any you don't want exposed, even to the single authorized owner.
+  commands_enabled:
+    - platform_status
+    - agents
+    - projects
+    - tasks
+    - task_status
+    - create_task
+    - pause_task
+    - resume_task
+    - cancel_task
+    - security_report
+    - update_status
+    - help_platform

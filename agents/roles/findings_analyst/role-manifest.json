@@ -1,0 +1,10 @@
+{
+  "role_slug": "findings_analyst",
+  "profile_id": "pcfindingsanalyst",
+  "role_title": "Security Findings Triage & Deduplication Analyst",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcfindingsanalyst",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\findings_analyst\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\reports",
+  "toolsets": "file"
+}

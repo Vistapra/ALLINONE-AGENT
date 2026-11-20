@@ -1,0 +1,10 @@
+{
+  "role_slug": "remediation_reviewer",
+  "profile_id": "pcremediationreviewer",
+  "role_title": "Security Remediation & Regression Verifier",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcremediationreviewer",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\remediation_reviewer\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file"
+}

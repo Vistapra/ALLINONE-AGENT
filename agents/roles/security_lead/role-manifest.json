@@ -1,0 +1,10 @@
+{
+  "role_slug": "security_lead",
+  "profile_id": "pcsecuritylead",
+  "role_title": "Defensive Security Architecture Lead",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcsecuritylead",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\security_lead\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file"
+}

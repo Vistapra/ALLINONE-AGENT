@@ -1,0 +1,43 @@
+{
+  "_comment": "ALLINONE-AGENT agent permissions & workspace scope (EXAMPLE). Role keys match agents/roles/<role_key>/ directories in this repo. Deliberately contains NO Paperclip company/agent UUIDs — those are production identifiers specific to one existing installation and must be freshly generated per-install by integration/org_provisioner.py, never copied from a template. See agents/roles/organization-roster.example.json for the roster shape (already sanitized in Phase 43) and PHASE-47 for the real provisioning flow.",
+
+  "workspace_allowlist": {
+    "_note": "Populated by setup.ps1 from the paths you provide. Never defaults to a whole drive root (e.g. 'D:\\') — setup.ps1 actively refuses that pattern.",
+    "paths": []
+  },
+
+  "wave_strategy": {
+    "_note": "Default activation plan from the brief: don't auto-run all 11 agents in parallel on first install. Wave-1 agents are active by default; Wave-2 start in standby and must be explicitly activated.",
+    "wave_1_active": ["ceo_agent", "backend_developer", "qa_engineer", "security_reviewer"],
+    "wave_2_standby": ["cto_agent", "frontend_developer", "devops_engineer", "security_lead", "findings_analyst", "remediation_reviewer", "compliance_reporter"]
+  },
+
+  "roles": {
+    "ceo_agent":              { "tool_categories": ["planning", "task_delegation", "reporting"],                    "timeout_seconds": 600, "retry_limit": 1 },
+    "cto_agent":              { "tool_categories": ["planning", "architecture_review", "task_delegation"],          "timeout_seconds": 600, "retry_limit": 1 },
+    "backend_developer":      { "tool_categories": ["code_read", "code_write", "test_execution", "shell"],         "timeout_seconds": 1200, "retry_limit": 2 },
+    "frontend_developer":     { "tool_categories": ["code_read", "code_write", "test_execution", "shell"],         "timeout_seconds": 1200, "retry_limit": 2 },
+    "devops_engineer":        { "tool_categories": ["code_read", "code_write", "shell", "service_control"],        "timeout_seconds": 1200, "retry_limit": 2 },
+    "qa_engineer":            { "tool_categories": ["code_read", "test_execution", "reporting"],                    "timeout_seconds": 1200, "retry_limit": 2 },
+    "security_lead":          { "tool_categories": ["code_read", "findings_read", "reporting"],                     "timeout_seconds": 900,  "retry_limit": 1 },
+    "security_reviewer":      { "tool_categories": ["code_read", "findings_read", "defensive_scan_readonly"],       "timeout_seconds": 900,  "retry_limit": 1 },
+    "findings_analyst":       { "tool_categories": ["findings_read", "reporting"],                                  "timeout_seconds": 600,  "retry_limit": 1 },
+    "remediation_reviewer":   { "tool_categories": ["code_read", "findings_read", "reporting"],                     "timeout_seconds": 900,  "retry_limit": 1 },
+    "compliance_reporter":    { "tool_categories": ["findings_read", "reporting"],                                  "timeout_seconds": 600,  "retry_limit": 1 }
+  },
+
+  "tool_category_definitions": {
+    "_note": "What each category actually permits — map these to your real tool-permission mechanism; this is a planning reference, not an enforced schema until wired into the real permission gate.",
+    "planning": "Read project state, create/update tasks and plans. No code or shell execution.",
+    "architecture_review": "Read code and docs for design review. No write access.",
+    "task_delegation": "Create/assign/update tasks across agents. No direct code or shell execution.",
+    "code_read": "Read access to authorized workspace paths only.",
+    "code_write": "Write access to authorized workspace paths only; never outside the workspace allowlist.",
+    "test_execution": "Run test suites within the authorized workspace.",
+    "shell": "Run shell commands within the authorized workspace; no system-wide administrative commands.",
+    "service_control": "Start/stop/restart the four ALLINONE-owned scheduled tasks only (see INSTALLER-REFERENCE.md) — never upstream Hermes Agent tasks.",
+    "findings_read": "Read-only access to VulnClaw findings.db — never write, never expand scanning scope beyond the existing defensive integration.",
+    "defensive_scan_readonly": "Trigger existing VulnClaw defensive scans against explicitly authorized workspace paths only.",
+    "reporting": "Generate reports/summaries from already-authorized data; no new data access beyond what the role already has."
+  }
+}

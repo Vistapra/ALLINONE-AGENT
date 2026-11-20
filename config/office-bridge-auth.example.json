@@ -1,0 +1,17 @@
+{
+  "_comment": "ALLINONE-AGENT Office Bridge auth (EXAMPLE). The REAL file (config/secrets/office-bridge-auth.json) is a mandatory publication exclusion per PUBLICATION-EXCLUSIONS.md and was never opened to build this template — this schema is derived only from the public architecture description in docs/legacy-platform-docs/OFFICE-BRIDGE.md (NTFS-ACL-protected token file, constant-time comparison, Origin/CSRF allowlist, owner RBAC, rate limiting). TODO: schema not yet confirmed field-for-field against the real file's structure — verify key names against a real running instance before relying on this template being complete.",
+
+  "access_token": "REPLACE_WITH_A_FRESH_RANDOM_TOKEN",
+  "_access_token_note": "Generate with setup.ps1 (same mechanism as the owner Studio Access Token) — never hand-type a weak value here. Compared using constant-time equality, not ==.",
+
+  "owner_rbac_id": "REPLACE_WITH_YOUR_OWNER_IDENTIFIER",
+  "_owner_rbac_id_note": "An opaque local identifier for the single authorized owner, NOT your Telegram numeric ID and NOT a Paperclip UUID from another installation — generate a fresh one per install.",
+
+  "cors_origin_allowlist": [
+    "http://127.0.0.1:3200"
+  ],
+  "_cors_note": "Only the local Hermes3D origin by default. Add others only if you understand the CSRF implications.",
+
+  "rate_limit_per_minute": 240,
+  "_rate_limit_note": "Non-secret operational parameter from the reference architecture; adjust to your own load expectations."
+}

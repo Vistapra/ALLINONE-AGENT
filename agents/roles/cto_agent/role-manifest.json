@@ -1,0 +1,10 @@
+{
+  "role_slug": "cto_agent",
+  "profile_id": "pcctoagent",
+  "role_title": "Chief Technology Officer \u2014 Architecture & Standards",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcctoagent",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\cto_agent\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file,terminal"
+}

@@ -1,0 +1,10 @@
+{
+  "role_slug": "compliance_reporter",
+  "profile_id": "pccompliancereporter",
+  "role_title": "Audit Evidence & Acceptance Compliance Specialist",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pccompliancereporter",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\compliance_reporter\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\reports",
+  "toolsets": "file"
+}

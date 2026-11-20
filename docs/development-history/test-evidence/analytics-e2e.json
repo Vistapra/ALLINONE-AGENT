@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-11-20T07:16:41.926Z",
+  "passed": 4,
+  "results": [
+    {
+      "id": "A01",
+      "title": "Hermes3D /api/company/analytics exposes real SQLite + Paperclip telemetry with zero path leaks",
+      "status": "PASS",
+      "duration_ms": 511,
+      "detail": "tokens=6.104.035, spend=$13.00, runs=99, approvals=13, monthlyBudget=$120"
+    },
+    {
+      "id": "A02",
+      "title": "Gateway WS sessions.usage returns real per-agent sessions, tool calls & combo/X model breakdown across all 11 agents",
+      "status": "PASS",
+      "duration_ms": 74.6,
+      "detail": "sessions=79, distinctAgents=11/11, toolCalls=327, model=custom/combo/X"
+    },
+    {
+      "id": "A03",
+      "title": "Gateway WS usage.cost returns 7-day daily cost series matching real activity dates",
+      "status": "PASS",
+      "duration_ms": 73.4,
+      "detail": "days=7, activeDays=2026-11-18($2.94), 2026-11-19($7.07), 2026-11-20($3.00)"
+    },
+    {
+      "id": "A04",
+      "title": "Gateway WS runs.list, approvals.list & budgets.get hydrate Performance & Budget intelligence",
+      "status": "PASS",
+      "duration_ms": 355.3,
+      "detail": "completedRuns=99, okRuns=68, avgRuntime=146s, approvals=13, budgets={\"dailySpendLimitUsd\":15,\"monthlySpendLimitUsd\":120,\"perAgentSoftLimitUsd\":16.82,\"alertThresholdPct\":80}"
+    }
+  ]
+}

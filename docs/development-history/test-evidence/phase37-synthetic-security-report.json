@@ -1,0 +1,13 @@
+{
+  "report_type": "defensive_synthetic_security_report",
+  "target_repository": "office-acceptance-portal",
+  "findings": [
+    {
+      "title": "Weak MD5 receipt signature, DEBUG=True, HTTP endpoint, and missing input bounds in portal_service.py",
+      "severity": "Medium",
+      "cwe": "CWE-328",
+      "component": "portal_service.py",
+      "recommendation": "Set DEBUG=False, enforce HTTPS GATEWAY_ENDPOINT, validate subtotal_cents>=0 and 0<=fee_bps<=5000, and replace hashlib.md5 with hashlib.sha256."
+    }
+  ]
+}

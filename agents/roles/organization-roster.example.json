@@ -1,0 +1,105 @@
+{
+  "company_id": "<generated-at-install-time>",
+  "company_name": "Unified AI Engineering & Operations",
+  "agents": {
+    "ceo_agent": {
+      "id": "<generated-at-install-time>",
+      "name": "CEO Agent",
+      "role": "ceo",
+      "title": "Chief Executive Officer — Planning & Delegation",
+      "status": "idle",
+      "reportsTo": null,
+      "budgetMonthlyCents": 2500
+    },
+    "cto_agent": {
+      "id": "<generated-at-install-time>",
+      "name": "CTO Agent",
+      "role": "cto",
+      "title": "Chief Technology Officer — Architecture & Standards",
+      "status": "paused",
+      "reportsTo": "ceo_agent",
+      "budgetMonthlyCents": 1500
+    },
+    "backend_developer": {
+      "id": "<generated-at-install-time>",
+      "name": "Backend Developer",
+      "role": "engineer",
+      "title": "Senior Full-Stack / Backend Software Engineer",
+      "status": "idle",
+      "reportsTo": "ceo_agent",
+      "budgetMonthlyCents": 3000
+    },
+    "frontend_developer": {
+      "id": "<generated-at-install-time>",
+      "name": "Frontend Developer",
+      "role": "designer",
+      "title": "Senior Frontend & UI Engineer",
+      "status": "paused",
+      "reportsTo": "cto_agent",
+      "budgetMonthlyCents": 1500
+    },
+    "devops_engineer": {
+      "id": "<generated-at-install-time>",
+      "name": "DevOps Engineer",
+      "role": "devops",
+      "title": "Senior DevOps & Runtime Diagnostics Engineer",
+      "status": "paused",
+      "reportsTo": "cto_agent",
+      "budgetMonthlyCents": 1500
+    },
+    "qa_engineer": {
+      "id": "<generated-at-install-time>",
+      "name": "QA Engineer",
+      "role": "qa",
+      "title": "Lead Quality Assurance & Regression Engineer",
+      "status": "idle",
+      "reportsTo": "ceo_agent",
+      "budgetMonthlyCents": 2000
+    },
+    "security_lead": {
+      "id": "<generated-at-install-time>",
+      "name": "Security Lead",
+      "role": "security",
+      "title": "Defensive Security Architecture Lead",
+      "status": "paused",
+      "reportsTo": "ceo_agent",
+      "budgetMonthlyCents": 1500
+    },
+    "security_reviewer": {
+      "id": "<generated-at-install-time>",
+      "name": "Security Reviewer",
+      "role": "security",
+      "title": "Defensive Code & Findings Security Reviewer",
+      "status": "idle",
+      "reportsTo": "ceo_agent",
+      "budgetMonthlyCents": 2000
+    },
+    "findings_analyst": {
+      "id": "<generated-at-install-time>",
+      "name": "Findings Analyst",
+      "role": "researcher",
+      "title": "Security Findings Triage & Deduplication Analyst",
+      "status": "paused",
+      "reportsTo": "security_lead",
+      "budgetMonthlyCents": 1000
+    },
+    "remediation_reviewer": {
+      "id": "<generated-at-install-time>",
+      "name": "Remediation Reviewer",
+      "role": "security",
+      "title": "Security Remediation & Regression Verifier",
+      "status": "paused",
+      "reportsTo": "security_lead",
+      "budgetMonthlyCents": 1000
+    },
+    "compliance_reporter": {
+      "id": "<generated-at-install-time>",
+      "name": "Report & Compliance Agent",
+      "role": "pm",
+      "title": "Audit Evidence & Acceptance Compliance Specialist",
+      "status": "paused",
+      "reportsTo": "ceo_agent",
+      "budgetMonthlyCents": 1000
+    }
+  }
+}

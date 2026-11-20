@@ -1,0 +1,55 @@
+# ALLINONE-AGENT .gitattributes
+#
+# Goal: predictable line endings across Windows/Linux/macOS contributors and CI runners,
+# WITHOUT corrupting anything that must stay byte-exact.
+
+# Default: normalize text files to LF in the repo, let git convert on checkout per platform.
+* text=auto eol=lf
+
+# Git patch files MUST stay byte-exact. Phase 42 verified upstream/patches/*.patch against
+# `git apply --check --reverse` on a clean checkout; any line-ending rewrite would invalidate
+# that verification. Treat as binary so git never touches them.
+*.patch -text -diff binary
+
+# Windows-only script types: keep CRLF. PowerShell's parser and some older PS hosts are
+# sensitive to encoding/line-ending surprises (Phase 44/45/48 all hit real, file-specific
+# bugs from exactly this class of issue — see CORRECTIONS-LOG.md). Pin explicitly rather
+# than relying on `eol=lf` default + a Windows checkout to "probably be fine".
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Cross-platform source — normalize to LF explicitly (don't rely on core.autocrlf alone).
+*.cs text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary — never diff, never normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.glb binary
+*.gltf binary
+*.hdr binary
+*.exr binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.ico binary
+*.pyc binary
+
+# Keep GitHub's own linguist from misclassifying generated/vendored-looking paths as "not code".
+upstream/patches/* linguist-generated=true
+docs/legacy-platform-docs/* linguist-documentation=true

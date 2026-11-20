@@ -1,0 +1,376 @@
+{
+  "executed_at": "2026-11-20T05:26:23.658Z",
+  "total_checks": 46,
+  "passed": 46,
+  "failed": 0,
+  "results": [
+    {
+      "id": "F01",
+      "category": "Access Gate",
+      "feature": "GET /login renders Owner authentication gate",
+      "status": "PASS",
+      "duration_ms": 72.9,
+      "detail": "HTTP 200 (2179 bytes)"
+    },
+    {
+      "id": "F02",
+      "category": "Access Gate",
+      "feature": "Unauthenticated GET /office redirects to /login (302)",
+      "status": "PASS",
+      "duration_ms": 5.7,
+      "detail": "HTTP 302 -> /login"
+    },
+    {
+      "id": "F03",
+      "category": "Access Gate",
+      "feature": "Invalid Studio token rejected with 401",
+      "status": "PASS",
+      "duration_ms": 7.1,
+      "detail": "HTTP 401 Unauthorized"
+    },
+    {
+      "id": "F04",
+      "category": "Access Gate",
+      "feature": "Valid Studio token issues 30-day HttpOnly SameSite=Strict cookie",
+      "status": "PASS",
+      "duration_ms": 2.3,
+      "detail": "Cookie issued (HttpOnly; SameSite=Strict; Max-Age=2592000)"
+    },
+    {
+      "id": "F05",
+      "category": "Access Gate",
+      "feature": "Authenticated GET /office serves 3D Virtual Office app",
+      "status": "PASS",
+      "duration_ms": 42.6,
+      "detail": "HTTP 200 OK"
+    },
+    {
+      "id": "F06",
+      "category": "Proxy & Security",
+      "feature": "Same-origin proxy GET /api/company/snapshot returns 11 real employees",
+      "status": "PASS",
+      "duration_ms": 52.3,
+      "detail": "11/11 agents loaded via /api/company/snapshot"
+    },
+    {
+      "id": "F07",
+      "category": "Proxy & Security",
+      "feature": "CSRF protection blocks cross-origin POST /api/company/tasks (403)",
+      "status": "PASS",
+      "duration_ms": 5.2,
+      "detail": "Cross-origin mutation blocked (HTTP 403)"
+    },
+    {
+      "id": "F08",
+      "category": "Upstream Hardening",
+      "feature": "SSRF guard on /api/runtime/custom blocks external hosts",
+      "status": "PASS",
+      "duration_ms": 12.8,
+      "detail": "External SSRF blocked (HTTP 400)"
+    },
+    {
+      "id": "F09",
+      "category": "Upstream Hardening",
+      "feature": "Host skill deletion route /api/gateway/skills/remove locked (403)",
+      "status": "PASS",
+      "duration_ms": 7.4,
+      "detail": "Locked (HTTP 403)"
+    },
+    {
+      "id": "F10",
+      "category": "Upstream Hardening",
+      "feature": "Arbitrary path mutation route /api/gateway/agent-state locked (403)",
+      "status": "PASS",
+      "duration_ms": 8.8,
+      "detail": "Locked (HTTP 403)"
+    },
+    {
+      "id": "F11",
+      "category": "Upstream Hardening",
+      "feature": "Directory autocomplete /api/path-suggestions blocks C:/Windows",
+      "status": "PASS",
+      "duration_ms": 4.9,
+      "detail": "C:\\Windows jailed (HTTP 400)"
+    },
+    {
+      "id": "F12",
+      "category": "Custom Runtime Seam",
+      "feature": "Office Bridge /health, /state, and /registry endpoints",
+      "status": "PASS",
+      "duration_ms": 6.6,
+      "detail": "/health + /state + /registry verified (combo/X)"
+    },
+    {
+      "id": "F13",
+      "category": "Custom Runtime Seam",
+      "feature": "POST /v1/chat/completions answers in Bahasa Indonesia via combo/X",
+      "status": "PASS",
+      "duration_ms": 24388.7,
+      "detail": "Halo, saya **CEO Agent** (Chief Executive Officer — Planning & Delegation — Executive Office). "
+    },
+    {
+      "id": "F14",
+      "category": "Gateway WS v3",
+      "feature": "Browser-proxied Gateway WS handshake (server-side token injection)",
+      "status": "PASS",
+      "duration_ms": 15.8,
+      "detail": "Connected via /api/gateway/ws without client-exposed token"
+    },
+    {
+      "id": "F15",
+      "category": "Gateway WS v3",
+      "feature": "RPC agents.list returns all 11 canonical Paperclip agents",
+      "status": "PASS",
+      "duration_ms": 1.5,
+      "detail": "11/11 agents (Frontend Developer, Findings Analyst, CEO Agent, CTO Agent, Security Reviewer, Remediation Reviewer, Security Lead, Report & Compliance Agent, QA Engineer, Backend Developer, DevOps Engineer)"
+    },
+    {
+      "id": "F16",
+      "category": "Gateway WS v3",
+      "feature": "RPC status returns active session map for all 11 agents",
+      "status": "PASS",
+      "duration_ms": 2.5,
+      "detail": "byAgent=11"
+    },
+    {
+      "id": "F17",
+      "category": "Gateway WS v3",
+      "feature": "RPC models.list returns combo/X",
+      "status": "PASS",
+      "duration_ms": 1.8,
+      "detail": "model=combo/X"
+    },
+    {
+      "id": "F18",
+      "category": "Gateway WS v3",
+      "feature": "RPC skills.status returns TypeScript-compliant SkillStatusEntry[]",
+      "status": "PASS",
+      "duration_ms": 1.6,
+      "detail": "skills=3"
+    },
+    {
+      "id": "F19",
+      "category": "Gateway WS v3",
+      "feature": "RPC cron.list returns 03:00 Asia/Jakarta maintenance schedule",
+      "status": "PASS",
+      "duration_ms": 1.3,
+      "detail": "job=platform-daily-maintenance-0300 (0 3 * * * Asia/Jakarta)"
+    },
+    {
+      "id": "F20",
+      "category": "Gateway WS v3",
+      "feature": "RPC config.get and exec.approvals.get",
+      "status": "PASS",
+      "duration_ms": 2.2,
+      "detail": "config.get + exec.approvals.get OK"
+    },
+    {
+      "id": "F21",
+      "category": "Gateway WS v3",
+      "feature": "RPC sessions.list, sessions.preview, and agents.files.get",
+      "status": "PASS",
+      "duration_ms": 3.9,
+      "detail": "sessions=11, IDENTITY.md loaded"
+    },
+    {
+      "id": "F22",
+      "category": "Gateway WS v3",
+      "feature": "RPC agents.create & agents.delete blocked (governed_by_paperclip)",
+      "status": "PASS",
+      "duration_ms": 1.9,
+      "detail": "Blocked cleanly (governed_by_paperclip)"
+    },
+    {
+      "id": "F23",
+      "category": "Kanban Board",
+      "feature": "RPC tasks.list -> tasks.create -> tasks.update synced with Paperclip",
+      "status": "PASS",
+      "duration_ms": 2212.1,
+      "detail": "Kanban card [UNI-94] [Exhaustive Kanban Test] Verify Board Card Lifecycle -> done"
+    },
+    {
+      "id": "F24",
+      "category": "Normalized Event WS",
+      "feature": "Proxied /api/company/events/ws snapshot.reconcile & live event push",
+      "status": "PASS",
+      "duration_ms": 115.9,
+      "detail": "latest_seq=1628, replay=40"
+    },
+    {
+      "id": "F25",
+      "category": "Inspector (All 11)",
+      "feature": "GET /api/company/agents/:id returns full 11-section Inspector for ALL 11 employees",
+      "status": "PASS",
+      "duration_ms": 783,
+      "detail": "11/11 verified (11 profiles)"
+    },
+    {
+      "id": "F26",
+      "category": "Task Command Center",
+      "feature": "Create task (no double-wake), idempotency dedup, comment & cancel",
+      "status": "PASS",
+      "duration_ms": 1832,
+      "detail": "Task UNI-68 created, deduplicated, commented & cancelled"
+    },
+    {
+      "id": "F27",
+      "category": "Collaboration & Meetings",
+      "feature": "Start governed Paperclip Meeting & conclude with archived summary",
+      "status": "PASS",
+      "duration_ms": 3210,
+      "detail": "Meeting mtg-c9e35122 -> COMPLETED & summary saved"
+    },
+    {
+      "id": "F28",
+      "category": "VulnClaw SOC",
+      "feature": "GET /api/company/findings returns isolated read-only findings & timelines",
+      "status": "PASS",
+      "duration_ms": 556.7,
+      "detail": "total=6, resolved=5"
+    },
+    {
+      "id": "F29",
+      "category": "Governance & Budget",
+      "feature": "GET /api/company/governance enforces COST UNKNOWN / UNPRICED USAGE",
+      "status": "PASS",
+      "duration_ms": 6.7,
+      "detail": "COST UNKNOWN · UNPRICED USAGE (12 policies)"
+    },
+    {
+      "id": "F30",
+      "category": "Fleet Emergency Controls",
+      "feature": "Emergency Stop pauses entire fleet -> Resume Wave-1 restores exact 4 Wave-1 agents",
+      "status": "PASS",
+      "duration_ms": 9027.1,
+      "detail": "0/11 paused -> 4/11 Wave-1 ACTIVE restored cleanly"
+    },
+    {
+      "id": "F31",
+      "category": "Operational Health",
+      "feature": "GET /api/company/health verifies 12/12 functional components HEALTHY",
+      "status": "PASS",
+      "duration_ms": 15.5,
+      "detail": "12/12 HEALTHY"
+    },
+    {
+      "id": "F32",
+      "category": "Evidence Viewer & Jail",
+      "feature": "Relative & absolute workspace inspection (200) + restricted path rejection (403)",
+      "status": "PASS",
+      "duration_ms": 1013.8,
+      "detail": "branch=fix/office-portal-remediation, restricted zones=403"
+    },
+    {
+      "id": "F33",
+      "category": "Layout Persistence",
+      "feature": "PUT & GET /api/company/layout persists 3D office settings",
+      "status": "PASS",
+      "duration_ms": 27.1,
+      "detail": "8 departments + saved_layout verified"
+    },
+    {
+      "id": "F34",
+      "category": "Payload Size Guard",
+      "feature": "300 KB request body rejected with HTTP 413",
+      "status": "PASS",
+      "duration_ms": 8.3,
+      "detail": "HTTP 413 Payload Too Large"
+    },
+    {
+      "id": "F35",
+      "category": "RBAC Guard",
+      "feature": "Viewer role & non-owner caller ID rejected with HTTP 403",
+      "status": "PASS",
+      "duration_ms": 5.1,
+      "detail": "Viewer=403, Stranger=403"
+    },
+    {
+      "id": "CHAT_01",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with Backend Developer (ENG)",
+      "status": "PASS",
+      "duration_ms": 5496.3,
+      "detail": "Halo! Saya adalah **Backend Developer** yang bertugas di **Engineering Department (ENG)** pada Kantor Virtual 3D Hermes3"
+    },
+    {
+      "id": "CHAT_02",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with CEO Agent (EXEC)",
+      "status": "PASS",
+      "duration_ms": 4190,
+      "detail": "Halo! Saya **CEO Agent**, menjabat sebagai *Chief Executive Officer — Planning & Delegation* di departemen **Executive O"
+    },
+    {
+      "id": "CHAT_03",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with QA Engineer (QA LAB)",
+      "status": "PASS",
+      "duration_ms": 3408.9,
+      "detail": "Halo! Saya adalah **QA Engineer (Lead Quality Assurance & Regression Engineer)** yang bertugas di departemen **Quality A"
+    },
+    {
+      "id": "CHAT_04",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with Security Reviewer (SOC)",
+      "status": "PASS",
+      "duration_ms": 4575,
+      "detail": "Halo! Saya adalah **Security Reviewer** di departemen **Security Operations Center (SOC)** di Kantor Virtual 3D Hermes3D"
+    },
+    {
+      "id": "CHAT_05",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with CTO Agent (EXEC)",
+      "status": "PASS",
+      "duration_ms": 7120.4,
+      "detail": "Saya adalah CTO Agent (Chief Technology Officer — Architecture & Standards) yang bertugas di departemen Executive Office"
+    },
+    {
+      "id": "CHAT_06",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with DevOps Engineer (ENG)",
+      "status": "PASS",
+      "duration_ms": 1186.7,
+      "detail": "Saya adalah DevOps Engineer di Departemen Engineering (ENG) kantor virtual 3D Hermes3D. Saya berkolaborasi dengan tim me"
+    },
+    {
+      "id": "CHAT_07",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with Findings Analyst (SOC)",
+      "status": "PASS",
+      "duration_ms": 24388.8,
+      "detail": "Halo, saya **Findings Analyst** (Security Findings Triage & Deduplication Analyst — Security Operations Center). Status "
+    },
+    {
+      "id": "CHAT_08",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with Frontend Developer (ENG)",
+      "status": "PASS",
+      "duration_ms": 24402.6,
+      "detail": "Halo, saya **Frontend Developer** (Senior Frontend & UI Engineer — Engineering Department). Status saya saat ini `STANDB"
+    },
+    {
+      "id": "CHAT_09",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with Remediation Reviewer (SOC)",
+      "status": "PASS",
+      "duration_ms": 17484.3,
+      "detail": "Halo, saya adalah **Remediation Reviewer** (Security Remediation & Regression Verifier) yang bertugas di departemen **Se"
+    },
+    {
+      "id": "CHAT_10",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with Report & Compliance Agent (COMP)",
+      "status": "PASS",
+      "duration_ms": 8214.2,
+      "detail": "Saya adalah Report & Compliance Agent dari departemen Compliance Office (COMP) di Kantor Virtual 3D Hermes3D. Saya berko"
+    },
+    {
+      "id": "CHAT_11",
+      "category": "11-Agent Live Chat (WS)",
+      "feature": "Live Gateway WS chat.send + chat.history with Security Lead (SOC)",
+      "status": "PASS",
+      "duration_ms": 7070,
+      "detail": "Saya adalah **Security Lead** (Defensive Security Architecture Lead) di departemen **Security Operations Center (SOC)** "
+    }
+  ]
+}

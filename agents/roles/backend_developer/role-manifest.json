@@ -1,0 +1,10 @@
+{
+  "role_slug": "backend_developer",
+  "profile_id": "pcbackenddeveloper",
+  "role_title": "Senior Full-Stack / Backend Software Engineer",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcbackenddeveloper",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\backend_developer\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file,terminal"
+}

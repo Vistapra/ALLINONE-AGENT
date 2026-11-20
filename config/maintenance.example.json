@@ -1,0 +1,49 @@
+{
+  "_comment": "ALLINONE-AGENT maintenance schedule (EXAMPLE). Structure derived from docs/legacy-platform-docs/MAINTENANCE.md and STARTUP-RECOVERY.md's real documented behavior; thresholds generalized to be portable (the reference doc hardcoded a 'D: >= 2.00 GB' disk guard, which only made sense on that specific machine's layout — here it's 'install-drive, configurable minimum').",
+
+  "schedule": {
+    "window_time": "03:00",
+    "timezone": "Asia/Jakarta",
+    "_note": "Matches the reference installation's real default. Both fields are configurable; change if a different maintenance window suits your environment."
+  },
+
+  "offline_catchup": {
+    "enabled": true,
+    "_note": "If the machine is powered off at the scheduled window, maintenance runs once it boots and network connectivity returns. State tracked in data/maintenance/state.json."
+  },
+
+  "active_work_deferral": {
+    "enabled": true,
+    "_note": "Before applying any update, check Paperclip for queued/running heartbeat runs and active Hermes worker processes. If work is in progress, defer the update rather than interrupting it."
+  },
+
+  "watchdog": {
+    "interval_seconds": 60,
+    "_note": "Local liveness + scheduled-task reconciliation only. Must NOT poll upstream GitHub/npm for updates on this interval — that's the separate daily maintenance job's job, not the watchdog's."
+  },
+
+  "disk_guard": {
+    "install_drive_minimum_free_gb": 2.0,
+    "_note": "Candidate updates are validated against this minimum free space on the install drive before being applied. Reference value was 2.00 GB; raise this if your components are larger."
+  },
+
+  "component_update_policy": {
+    "hermes_agent": {
+      "managed_by": "external_updater",
+      "_note": "Exclusively managed by the official HermesUpdater (or whatever updater you install alongside Hermes Agent) — this platform's own update.ps1 deliberately does not duplicate that updater or its scheduled task."
+    },
+    "paperclip_and_vulnclaw": {
+      "post_update_smoke_check": true,
+      "_note": "Candidate tags should be validated against the disk guard, a compatibility gate, and a post-update functional smoke check before being considered applied."
+    },
+    "hermes3d_and_office_bridge": {
+      "track_pinned_branch_only": true,
+      "_note": "Never auto-track an unreviewed upstream branch. Pin to a specific commit/tag and require a deliberate, reviewed bump. Post-maintenance smoke gate should verify the office-bridge /health endpoint and the Hermes3D login page both return 200 OK."
+    }
+  },
+
+  "maintenance_lock": {
+    "path": "${ALLINONE_HOME}/data/maintenance/maintenance.lock",
+    "_note": "While this lock file is present, service launchers and the watchdog should emit a MAINTENANCE state and pause restart actions cleanly rather than fighting the maintenance job."
+  }
+}

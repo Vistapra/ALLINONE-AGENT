@@ -1,0 +1,10 @@
+{
+  "role_slug": "devops_engineer",
+  "profile_id": "pcdevopsengineer",
+  "role_title": "Senior DevOps & Runtime Diagnostics Engineer",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcdevopsengineer",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\devops_engineer\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file,terminal"
+}

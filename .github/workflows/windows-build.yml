@@ -1,0 +1,61 @@
+name: Windows Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet-build-windows:
+    name: .NET launcher build (Windows runner, real target OS)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet build automation/launchers/OfficeServiceLauncher.csproj
+      - run: dotnet build automation/launchers/PaperclipServiceLauncher.csproj
+      - run: dotnet build automation/updater/CuaDriverProxy.csproj
+
+  powershell-script-execution:
+    name: PowerShell scripts - load modules + run no-op functions (Windows runner)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import installer helper modules and parse every script
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module .\scripts\lib\Preflight.psm1 -Force
+          Import-Module .\scripts\lib\InstallState.psm1 -Force
+          Write-Host "Modules imported cleanly."
+
+          # Exercise a couple of genuinely read-only Preflight functions for real, on a real
+          # Windows runner - this is cheap, safe, and catches the class of bug Phase 45 found
+          # (functions that parse fine but throw at actual call time).
+          Test-AllinoneOsCompatibility | Format-List
+          Test-AllinoneCommandPresent -Command git -VersionArg '--version' -MinimumVersion '2.0.0' | Format-List
+
+          $files = Get-ChildItem -Path . -Recurse -Include *.ps1,*.psm1 -File
+          $failed = @()
+          foreach ($f in $files) {
+            $tokens = $null
+            $errors = $null
+            $null = [System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$tokens, [ref]$errors)
+            if ($errors) { $failed += $f.FullName; Write-Host "::error file=$($f.FullName)::$($errors -join '; ')" }
+          }
+          Write-Host "Checked $($files.Count) PowerShell files on a real Windows runner."
+          if ($failed.Count -gt 0) { exit 1 }
+
+      - name: install.ps1 -DryRun (plan-only, makes no changes)
+        shell: pwsh
+        run: |
+          # -DryRun must never mutate anything - this is the one install.ps1 invocation safe
+          # to run unattended in CI. A full (non-dry-run) install is explicitly Phase 52/53
+          # territory and requires a provisioned environment (Postgres, network access to
+          # clone pinned upstream repos, etc.) that doesn't exist in this workflow yet.
+          .\install.ps1 -DryRun

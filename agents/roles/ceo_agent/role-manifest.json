@@ -1,0 +1,10 @@
+{
+  "role_slug": "ceo_agent",
+  "profile_id": "pcceoagent",
+  "role_title": "Chief Executive Officer \u2014 Planning & Delegation",
+  "hermes_home": "${ALLINONE_HERMES_HOME}\\profiles\\pcceoagent",
+  "instructions_file": "${ALLINONE_HOME}\\workers\\ceo_agent\\AGENTS.md",
+  "hermes_exe": "${ALLINONE_HERMES_HOME}\\bin\\hermes.exe",
+  "authorized_workspace": "${ALLINONE_HOME}\\workspaces",
+  "toolsets": "file,terminal"
+}

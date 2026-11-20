@@ -1,0 +1,13 @@
+{
+  "report_type": "defensive_synthetic_audit",
+  "project": "acceptance-invoice-app",
+  "findings": [
+    {
+      "title": "Weak MD5 hash and DEBUG=True enabled in invoice_engine.py",
+      "severity": "Medium",
+      "cwe": "CWE-328",
+      "component": "invoice_engine.py",
+      "recommendation": "Set DEBUG=False, enforce HTTPS endpoint, validate non-negative inputs, and use hashlib.sha256."
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-11-20",
+  "components": [
+    {
+      "component": "hermes-agent-npm-bridge",
+      "upstream_url": "https://github.com/wyrtensi/hermes-agent-npm",
+      "resolved_version": "0.21.5",
+      "git_commit": null,
+      "release_tag": null,
+      "installation_method": "npm install hermes-agent@0.21.5",
+      "runtime_requirements": "Node.js >= 20.0.0",
+      "patch_files": [],
+      "patch_checksum": null,
+      "lockfile_checksum": null,
+      "license": "MIT",
+      "compatibility_status": "verified-installed"
+    },
+    {
+      "component": "hermes-agent-upstream",
+      "upstream_url": "https://github.com/NousResearch/hermes-agent",
+      "resolved_version": "v2026.9.24",
+      "git_commit": "f97608f178d1ffeca59860195ab7da295f7c8e5f",
+      "release_tag": "v2026.9.24",
+      "installation_method": "fetched automatically by hermes-agent-npm-bridge postinstall",
+      "runtime_requirements": "Python 3.11",
+      "patch_files": [],
+      "patch_checksum": null,
+      "lockfile_checksum": null,
+      "license": "MIT",
+      "compatibility_status": "verified-installed"
+    },
+    {
+      "component": "paperclip",
+      "upstream_url": "https://github.com/paperclipai/paperclip.git",
+      "resolved_version": "3dffb2c9 (master)",
+      "git_commit": "3dffb2c9",
+      "release_tag": null,
+      "installation_method": "git clone, pinned commit",
+      "runtime_requirements": "see paperclip/package.json",
+      "patch_files": [],
+      "patch_checksum": null,
+      "lockfile_checksum": null,
+      "license": "MIT",
+      "compatibility_status": "verified-clean-checkout"
+    },
+    {
+      "component": "vulnclaw",
+      "upstream_url": "https://github.com/Netw0rkNoob/VulnClaw.git",
+      "resolved_version": "v0.4.1",
+      "git_commit": "0b34878",
+      "release_tag": "v0.4.1",
+      "installation_method": "git clone, pinned tag",
+      "runtime_requirements": "see vulnclaw venv/requirements",
+      "patch_files": [],
+      "patch_checksum": null,
+      "lockfile_checksum": null,
+      "license": "MIT",
+      "compatibility_status": "verified-clean-checkout"
+    },
+    {
+      "component": "hermes3d",
+      "upstream_url": "https://github.com/iamlukethedev/Hermes3D",
+      "resolved_version": "21215d7 (integration/unified-ai-company, 6 commits past v1.0.0)",
+      "git_commit": "21215d7",
+      "release_tag": "v1.0.0 (base, not current HEAD)",
+      "installation_method": "git clone pinned commit + apply vendored patch (or copy working-tree snapshot directly, see PHASE-42 notes on CRLF/patch fragility)",
+      "runtime_requirements": "Node.js, Next.js (see hermes3d/source/package.json)",
+      "patch_files": [
+        "upstream/patches/hermes3d-unified-ai-company.patch",
+        "upstream/patches/NEW-FILE-standup3dAll11Agents.test.ts"
+      ],
+      "patch_checksum": "sha256:b660004560bb7c4116a621258aae230e103a3ef06389e347fd82dce9f1a1c400",
+      "lockfile_checksum": null,
+      "license": "MIT (code); UNDECLARED (bundled 3D/HDRI/background assets under public/office-assets/ — see PHASE-42-license-compliance.md)",
+      "compatibility_status": "verified-reverse-apply; 23 modified + 1 new untracked file captured; NOT yet forward-apply-tested against a clean checkout"
+    }
+  ]
+}
