@@ -13,7 +13,7 @@ jobs:
     name: detect-secrets scan (second-layer defense, not sufficient alone)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -44,7 +44,7 @@ jobs:
     name: Confirm no generated/runtime paths are tracked
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Fail if node_modules/.next/bin/obj/__pycache__ are ever tracked by git
         run: |
           set -e

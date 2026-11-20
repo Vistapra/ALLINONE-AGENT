@@ -13,7 +13,7 @@ jobs:
     name: .NET launcher build (Windows runner, real target OS)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -25,7 +25,7 @@ jobs:
     name: PowerShell scripts - load modules + run no-op functions (Windows runner)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Import installer helper modules and parse every script
         shell: pwsh
         run: |
