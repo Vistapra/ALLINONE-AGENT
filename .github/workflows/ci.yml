@@ -17,7 +17,7 @@ jobs:
       run:
         working-directory: apps/hermes3d
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
@@ -33,7 +33,7 @@ jobs:
       run:
         working-directory: apps/office-bridge
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
@@ -54,7 +54,7 @@ jobs:
     name: Python integration package smoke-import
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -67,7 +67,7 @@ jobs:
     name: PowerShell syntax validation (parse-only, no execution)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Parse every .ps1/.psm1 with the real PowerShell AST parser
         shell: pwsh
         run: |
@@ -92,7 +92,7 @@ jobs:
     name: .NET launcher build (cross-platform compile check)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
