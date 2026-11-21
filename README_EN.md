@@ -97,7 +97,7 @@ Or via the batch wrapper (no system-wide PowerShell execution-policy change need
 install.cmd
 ```
 
-**Honest caveat**: `install.ps1` has been statically validated (parsing, per-stage logic, and some preflight functions were actually run live against a real machine during Phase 45) but has **never been executed end-to-end** from start to finish on any machine. Run `-DryRun` and read the plan before proceeding.
+**Honest caveat (updated 2026-11-21)**: `install.ps1`, `health.ps1`, `stop.ps1`/`start.ps1`/`restart.ps1` have now **actually been run end-to-end** (not just statically validated) against a real reference machine, via the real **Adopt-Existing** path (the realistic scenario for a machine that already has Hermes Agent installed) — see [docs/TESTING.md](docs/TESTING.md) for full evidence, including 6 real bugs found by actually running the scripts (not just parsing them) and fixed. **Not yet tested**: a fresh install on a genuinely clean machine/VM — only the Adopt-Existing path has been proven. Run `-DryRun` first and read the plan before proceeding on a different machine.
 
 ## 6. Installation — Modes
 
@@ -239,22 +239,24 @@ See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for the full license/copyri
 
 ## 20. License
 
-All four upstream dependencies are MIT-licensed (verified from each project's own actual LICENSE file, not assumed). **This repository's own custom code** (`apps/office-bridge/`, `integration/`, `agents/`, `automation/`, installer scripts) **does not yet have its own LICENSE file** — that's a decision for the repository owner to make; given every upstream dependency is MIT, a consistent MIT license is a reasonable recommendation, but it isn't decided unilaterally here.
+All four upstream dependencies are MIT-licensed (verified from each project's own actual LICENSE file, not assumed). **This repository's own custom code** (`apps/office-bridge/`, `integration/`, `agents/`, `automation/`, installer scripts, documentation) **is MIT-licensed**, per the repository owner's explicit decision — see the [`LICENSE`](../LICENSE) file at the repository root. This is consistent with all four upstream dependencies' licenses, but remains its own separate license file for this repository's original code, not an automatic inheritance from upstream.
 
 ## 21. Known Limitations
 
 Written deliberately in full — this is the most important section for trust:
 
-- A full end-to-end installation **has never been run** on any machine.
-- Office Bridge cannot load on Node < 22 (see System Requirements) — an inherited bug from the original platform, not new.
+- **(Updated 2026-11-21)** `install.ps1`/`health.ps1`/`stop.ps1`/`start.ps1`/`restart.ps1` have now actually been run end-to-end on a real reference machine via the **Adopt-Existing** path — see [docs/TESTING.md](docs/TESTING.md). **Not yet tested**: a fresh install on a genuinely clean machine/VM.
+- Office Bridge cannot load on Node < 22 (see System Requirements) — an inherited bug from the original platform, not new. **Now verified to fully work on Node 22** (see docs/TESTING.md), using an isolated Node 22 install that never touched the reference machine's system Node.
 - Hermes3D's 3D/HDRI assets have no declared license — not included in this repo.
-- This repository's own custom-code license is not yet decided (see License above).
-- Full runtime parity between 3D and 2D modes (not just code-structural similarity) has not been proven.
-- The claim that "11 agents sit together in one meeting" — the underlying mechanisms (pathfinding, Paperclip task delegation) are real, but evidence of a fully completed, documented multi-agent meeting **was not found**; don't assume this fully works yet.
+- **(Done)** This repository's own custom-code license: MIT, see [`LICENSE`](../LICENSE).
+- Full runtime parity between 3D and 2D modes has not been proven visually/in-browser — but its backend logic (including the 11-agent meeting feature) now has real evidence, see next point.
+- The claim that "11 agents sit together in one meeting" — the underlying mechanisms (pathfinding, Paperclip task delegation) are real, and **a real unit test for this feature (`tests/unit/standup3dAll11Agents.test.ts`) now passes in 5 of 5 full-suite runs** (see docs/TESTING.md). **Not yet proven**: a live, visual multi-agent meeting with real LLM calls — deliberately not attempted since credentials are not yet rotated (see Security & Privacy).
 - The original platform's old test figures ("390/390 PASS") are **self-contradictory** in their own source document (another section of the same document says "387 PASS, 3 NOT_TESTED") — don't republish either figure as fact without reconciling them further.
-- `npm audit` on Hermes3D reports 24 dependency vulnerabilities (including 2 critical) — not auto-fixed, needs its own review before production use.
+- **(Done)** `npm audit` on Hermes3D: 24 vulnerabilities (including 2 critical) **fixed, 0 remaining** — verified via live `npm audit`, see `VULNERABILITY-REMEDIATION-REPORT.md` and docs/TESTING.md for exact package bumps and full regression results (186/186 test files, 1233/1233 individual tests passing).
 - Credential rotation on the original reference installation has not been performed by its owner (see Security & Privacy) — not something this repo can fix from the inside.
 - Live model-provider connectivity verification is not yet implemented in `setup.ps1`.
+- **(New)** 11-agent status on the reference production install: 10 of 11 agents `idle` (healthy). **CEO Agent** is `error`, caused by an interrupted Hermes Agent self-update (`hermes update` needs to be run by the owner to finish it) — this is a Hermes Agent-level issue outside this repository's scope, not fixed from here.
+- Phase 52/53 testing was performed on one reference machine (Adopt-Existing), not a second clean machine/VM — see docs/TESTING.md for the exact scope of what is and isn't covered.
 
 ## 22. Roadmap
 

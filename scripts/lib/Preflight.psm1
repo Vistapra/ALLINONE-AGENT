@@ -102,6 +102,80 @@ function Test-AllinoneCommandPresent {
     [PSCustomObject]@{ Name = $Command; Status = $status; Detail = $detail }
 }
 
+function Test-AllinoneNodeRuntime {
+    <#
+    .SYNOPSIS
+        Checks for a Node runtime satisfying MinimumVersion, looking in two places:
+        the system PATH `node`, AND (if present) Hermes Agent's own self-managed,
+        isolated toolchain under %LOCALAPPDATA%\hermes\tools\node-*-win32-x64\node.exe.
+    .DESCRIPTION
+        Discovered during real runtime verification: Hermes Agent ships and manages its
+        own pinned Node runtime (observed: v26.12.1) completely independent of the system
+        PATH `node`, and actually starts Office Bridge / Hermes3D with it directly by full
+        path, not via PATH resolution. A machine can satisfy this requirement via EITHER
+        location - checking PATH alone produces a false Fail on a real, working
+        Adopt-Existing installation.
+    #>
+    [CmdletBinding()]
+    param(
+        [string]$MinimumVersion = '22.0.0'
+    )
+    $candidates = @()
+
+    $pathNode = Get-Command node -ErrorAction SilentlyContinue
+    if ($pathNode) {
+        $verOut = & node --version 2>&1 | Select-Object -First 1
+        $candidates += [PSCustomObject]@{ Source = 'PATH'; Path = $pathNode.Source; VersionString = $verOut }
+    }
+
+    $hermesToolsRoot = Join-Path $env:LOCALAPPDATA 'hermes\tools'
+    if (Test-Path $hermesToolsRoot) {
+        Get-ChildItem -Path $hermesToolsRoot -Directory -Filter 'node-*-win32-x64' -ErrorAction SilentlyContinue |
+            ForEach-Object {
+                $exe = Join-Path $_.FullName 'node.exe'
+                if (Test-Path $exe) {
+                    $verOut = & $exe --version 2>&1 | Select-Object -First 1
+                    $candidates += [PSCustomObject]@{ Source = 'Hermes-managed toolchain'; Path = $exe; VersionString = $verOut }
+                }
+            }
+    }
+
+    if ($candidates.Count -eq 0) {
+        return [PSCustomObject]@{
+            Name   = 'node (runtime)'
+            Status = 'Fail'
+            Detail = "No Node runtime found on PATH or under '$hermesToolsRoot'."
+        }
+    }
+
+    $required = [version]$MinimumVersion
+    $parsed = $candidates | ForEach-Object {
+        $m = [regex]::Match([string]$_.VersionString, '\d+(\.\d+){1,3}')
+        if ($m.Success) {
+            try { $v = [version]$m.Value } catch { $v = $null }
+        } else { $v = $null }
+        [PSCustomObject]@{ Source = $_.Source; Path = $_.Path; VersionString = $_.VersionString; Parsed = $v }
+    }
+
+    $best = $parsed | Where-Object { $_.Parsed -and $_.Parsed -ge $required } | Sort-Object Parsed -Descending | Select-Object -First 1
+    if ($best) {
+        return [PSCustomObject]@{
+            Name   = 'node (runtime)'
+            Status = 'Pass'
+            Detail = "$($best.Source) at $($best.Path): $($best.VersionString) (required >= $required). " +
+                     "Office Bridge's startup should prefer this path explicitly if it differs from the PATH default."
+        }
+    }
+
+    $summary = ($parsed | ForEach-Object { "$($_.Source): $($_.VersionString)" }) -join '; '
+    [PSCustomObject]@{
+        Name   = 'node (runtime)'
+        Status = 'Fail'
+        Detail = "Found Node runtime(s) but none meet the required >= $required : $summary. " +
+                 "Office Bridge (node:sqlite) needs this; see INSTALLATION.md for options."
+    }
+}
+
 function Test-AllinonePortAvailable {
     [CmdletBinding()]
     param([Parameter(Mandatory)] [int]$Port)
@@ -157,4 +231,5 @@ function Get-AllinoneInstallMode {
 }
 
 Export-ModuleMember -Function Test-AllinoneOsCompatibility, Test-AllinoneHardware, Test-AllinoneDiskSpace, `
-    Test-AllinoneCommandPresent, Test-AllinonePortAvailable, Test-AllinoneNetworkConnectivity, Get-AllinoneInstallMode
+    Test-AllinoneCommandPresent, Test-AllinoneNodeRuntime, Test-AllinonePortAvailable, `
+    Test-AllinoneNetworkConnectivity, Get-AllinoneInstallMode

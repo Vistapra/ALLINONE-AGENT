@@ -34,8 +34,17 @@ install.cmd
    built-in, which requires Node 22.5+; on Node 20 those adapters fail to load at all
    (confirmed during Phase 49 build verification, and confirmed to be true of the original
    platform too, not something this repo introduced). Several Hermes3D dependencies also
-   warn (`EBADENGINE`) wanting `^22.x`. If your machine only has Node 20.x, Preflight will
-   report a hard `Fail` for Node — this is intentional, not a bug.
+   warn (`EBADENGINE`) wanting `^22.x`.
+
+   **The Node check looks in two places, not just PATH**: if you already have Hermes Agent
+   installed, it manages its own pinned, self-contained Node runtime under
+   `%LOCALAPPDATA%\hermes\tools\node-*-win32-x64\node.exe` — completely separate from
+   whatever `node` your system PATH resolves to, and that is what actually runs the real
+   production Office Bridge/Hermes3D processes on an existing installation (observed:
+   v26.12.1, far above the floor). `Test-AllinoneNodeRuntime` (`scripts\lib\Preflight.psm1`)
+   checks both locations and passes if *either* meets the minimum — a real Adopt-Existing
+   machine with an old PATH `node` but a modern Hermes-managed one correctly passes. If
+   neither location has Node >= 22, Preflight reports a hard `Fail` — this is intentional.
 2. **Install Plan** — prints what will happen; `-DryRun` stops here with no changes.
 3. **Mode detection** — `Fresh`, `Adopt` (an existing Hermes/Paperclip/ALLINONE install is
    detected — this is the realistic path on a machine that already runs the platform),

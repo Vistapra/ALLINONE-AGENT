@@ -82,7 +82,7 @@ $preflightResults = @(
     Test-AllinoneOsCompatibility
     Test-AllinoneHardware
     Test-AllinoneDiskSpace -Path $AllinoneHome -MinimumFreeGb 8
-    Test-AllinoneCommandPresent -Command 'node' -VersionArg '--version' -MinimumVersion '22.0.0'
+    Test-AllinoneNodeRuntime -MinimumVersion '22.0.0'
     Test-AllinoneCommandPresent -Command 'git' -VersionArg '--version'
     Test-AllinoneCommandPresent -Command 'python' -VersionArg '--version'
     Test-AllinonePortAvailable -Port 3100   # Paperclip
@@ -223,6 +223,11 @@ try {
         Write-Host "    [STUB] Embedded PostgreSQL initialization is not yet scripted in this phase." -ForegroundColor Yellow
         Write-Host "    This reference install uses PostgreSQL on 127.0.0.1:54329 managed outside this installer." -ForegroundColor Yellow
         Write-Host "    A real embedded-Postgres bootstrap (initdb, data dir under `$ALLINONE_HOME\data\paperclip, migrations) is future work - do not assume a database is ready after this stage." -ForegroundColor Yellow
+        if ($effectiveMode -ne 'Adopt') {
+            Write-Host "    On a Fresh install, Paperclip itself also still needs its own first-run bootstrap (owner account, Board API key, paperclip-board-key.json) before Office Bridge can authenticate to it." -ForegroundColor Yellow
+            Write-Host "    scripts\bootstrap_and_verify_paperclip.py does this - it is NOT auto-run here, same reviewable-step discipline as org_provisioner.py below, because it mints real credentials, creates an initial company, and stops/restarts the PaperclipServer task as part of its own verification." -ForegroundColor Yellow
+            Write-Host "    Review it, then run it yourself once config\secrets\paperclip-admin.json exists with real admin credentials you control." -ForegroundColor Yellow
+        }
     }
 
     # -----------------------------------------------------------------------

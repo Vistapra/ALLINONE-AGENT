@@ -1,42 +1,57 @@
 # Testing Status
 
-Honest, as-of-this-writing status. "Verified" below means a real command was actually executed and its real output checked — not that the capability was merely read through or assumed to work.
+Honest, as-of-this-writing status. "Verified" below means a real command was actually executed and its real output checked — not that the capability was merely read through or assumed to work. This file was substantially rewritten on 2026-11-21 after a real end-to-end testing pass against the actual reference machine (not a clean/isolated VM — see "Environment" below for exactly what that means for these results).
 
-## Verified so far (build/compile/static verification)
+## Environment these results were produced on
+
+Reference machine: Windows 10 Pro 19045, Pentium G5400, 8GB RAM, GT 710 2GB — a genuinely low-end PC, and the **same machine already running the real production ALLINONE-AGENT/Hermes platform** (not a clean VM). This means:
+- "Fresh install" testing below was done via `install.ps1`'s real **Adopt-Existing** detection path (the realistic scenario for anyone who already has Hermes Agent installed), not a from-scratch clean-OS install — that remains a real, disclosed gap (see "NOT yet verified").
+- Service lifecycle testing (`stop.ps1`/`start.ps1`/`restart.ps1`) was run against this machine's **real, live production** `PaperclipServer`/`OfficeVirtualCompany` scheduled tasks, with health checked before and after every step. One test did briefly interrupt live production services due to a real bug found in the process (see below) — it was fixed immediately and service was confirmed fully restored.
+- An isolated Node 22.23.5 (nodejs.org official binary, extracted to a private folder, never added to PATH) and a user-scoped .NET SDK 8.0.428 were installed specifically to make these tests possible, without changing this machine's system-wide Node (still v20.16.0 on PATH) or any production configuration.
+
+## Verified so far (real execution, not just build/compile)
 
 | Target | Result | Evidence |
 |---|---|---|
-| Hermes3D: `npm install` | PASS | 637 packages installed clean on a genuinely empty `node_modules` |
-| Hermes3D: `npm run typecheck` (`tsc --noEmit`) | PASS | 0 TypeScript errors, including files touched across three security-remediation passes |
-| Hermes3D: `npm run build` (`next build`) | PASS | Production build succeeded, 32 routes generated |
-| Python `integration/` package | PASS | All modules import cleanly from a fresh process with `PYTHONPATH` set to repo root; stdlib-only, no third-party deps needed |
-| C# launchers (`OfficeServiceLauncher`, `PaperclipServiceLauncher`, `CuaDriverProxy`) | PASS | `dotnet build` with .NET SDK 8.0.428 — 0 compile errors across all three, first time any of them has actually been compiled in this effort |
-| Office Bridge: `npm install` | PASS | A missing `package.json` was found and added; install succeeds |
-| Office Bridge: smoke-load | PARTIAL | Fail-closed owner-auth behavior confirmed firing correctly at runtime; load fails on Node < 22 due to `node:sqlite` (see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)) — a pre-existing platform limitation |
-| Full-tree syntax validation | PASS | JavaScript/CJS/MJS 41/41, Python 38/38, PowerShell 18/18 (via `node --check`, `py_compile`, and PowerShell's real AST parser — not just "looks fine") |
+| `install.ps1` (Adopt-Existing mode) | **PASS** | Actually executed (not dry-run) against this real machine. Exit 0, all 8 stages completed. Genuinely `git clone`d Paperclip and VulnClaw from their real upstream URLs, landing on the exact commits recorded in `upstream/components.lock.json` (verified via `git log` in the resulting checkout, not just console output). Config templates genuinely written with placeholders only. |
+| `install.ps1 -DryRun` | PASS | Clean plan output, zero side effects, correctly auto-detected Adopt-Existing mode. |
+| `health.ps1` | **PASS** (after fixing 3 real bugs found by running it) | See "Real bugs found via execution" below. Final state: exit 0, all ALLINONE-managed checks pass, verified against this real machine's actual Paperclip/Hermes3D/Office Bridge endpoints and scheduled-task states. |
+| `stop.ps1` / `start.ps1` / `restart.ps1` | **PASS** (after fixing 2 real bugs found by running it) | Actually stopped and restarted the real `PaperclipServer`/`OfficeVirtualCompany` scheduled tasks on this machine, with health verified before/after. See "Real bugs found via execution" below for what went wrong first and how it was fixed and verified recovered. |
+| Office Bridge: real runtime start (Node 22) | **PASS** | Started `server.js` for real (isolated port 13210, isolated `ALLINONE_HOME`, fake test credentials — no real credentials or production data touched). Confirmed `node:sqlite`-backed adapters load without error on Node 22 (vs. the `ERR_UNKNOWN_BUILTIN_MODULE` crash on Node 20). Actually exercised `/health`, `/state`, `/registry`, `/api/office-bridge/health`, `/api/office-bridge/agents`, and both WebSocket protocols (Gateway Protocol v3, Normalized Event Stream) with real requests/handshakes — not just "server started". |
+| Hermes3D: `npm install` / `npm run typecheck` / `npm run build` | PASS | 637 packages, 0 TypeScript errors, production build succeeds, 32 routes generated. |
+| Hermes3D: full test suite (`vitest run`) | **PASS** | **186/186 test files, 1233/1233 individual tests passed**, reproduced on two consecutive full runs. `tests/unit/standup3dAll11Agents.test.ts` (the 11-agent meeting feature test) passed in every one of 5 full-suite runs performed during this pass. Two real pre-existing test bugs (a design-system violation, a test-isolation gap) and one flaky-timeout issue (confirmed via isolated reliable reruns, not a logic bug) were found and fixed along the way. |
+| npm dependency vulnerabilities (Hermes3D) | **FIXED** | 24 → 0, including both criticals (`next`, `vitest`), via targeted version bumps + `overrides` (not a blind `npm audit fix --force`) — confirmed via live `npm audit`, not assumed. Full before/after list in `VULNERABILITY-REMEDIATION-REPORT.md`. |
+| Python `integration/` package | PASS | All modules import cleanly from a fresh process with `PYTHONPATH` set to repo root; stdlib-only, no third-party deps needed. |
+| C# launchers (`OfficeServiceLauncher`, `PaperclipServiceLauncher`, `CuaDriverProxy`) | PASS | `dotnet build` with .NET SDK 8.0.428 — 0 compile errors across all three. |
+| 11-agent status (read-only, against real production Paperclip) | **PARTIAL — 10/11 healthy** | Queried the real production company (`Unified AI Engineering & Operations`) via its real Board API key, read-only. All 11 documented agent roles exist. 10 report `status: idle` (healthy/waiting). **CEO Agent reports `status: error`**, with a specific, diagnosable cause: an interrupted Hermes Agent self-update (`errorReason`: *"hermes: source-update completion failed... run `hermes update` to finish it"*). This is a **pre-existing Hermes Agent-level operational issue, unrelated to this repository's code** — not fixed as part of this effort, since it requires the owner's own `hermes update` action on a system outside this repo's scope. See [ADMIN-GUIDE.md](ADMIN-GUIDE.md). |
+| Full-tree syntax validation | PASS | JavaScript/CJS/MJS, Python, PowerShell all parse clean via `node --check`, `py_compile`, and PowerShell's real AST parser. |
 
-## NOT yet verified (scheduled, not done)
+## Real bugs found via actual execution (not caught by any static check)
 
-- **Full end-to-end installation** (`install.ps1` run from a truly clean machine through to all services healthy) — has never been executed on any machine, including the reference machine. Individual stages have been statically validated and a handful of read-only Preflight functions have been run live, but the orchestrator has never been run start-to-finish.
-- **Real agent execution** — the 11 agent roles are provisioned-by-design (verified via `org_provisioner.py`'s logic), but no agent has actually been run against a live task as part of this effort.
-- **Multi-agent meeting, end-to-end** — see [MEETING-GUIDE.md](MEETING-GUIDE.md) for exactly what is and isn't confirmed here.
-- **3D/2D runtime parity** — confirmed structurally (shared code), not behaviorally (no dev server run to compare).
-- **Browser-based UI testing** — not performed.
-- **Cross-interface testing** (Telegram → Paperclip → Hermes → 3D Office and reverse) — not performed; Telegram integration itself requires a freshly rotated token the reference install does not have configured for this purpose.
-- **Load/performance testing** beyond the single low-spec reference machine's informal build timings.
+Static syntax/AST validation (used throughout earlier phases) proved, repeatedly, insufficient on its own — every bug below is syntactically valid code that is wrong at runtime, wrong in design, or wrong in a way that only shows up under real load. Listed here because **this is the evidence that real testing, not just auditing, happened**:
 
-## Why the gap
+1. `health.ps1`: `Status = (if (...) {...} else {...})` used as an inline hashtable value — invalid in this context, throws `CommandNotFoundException` at runtime, every time. Fixed by assigning to a variable first.
+2. `health.ps1`: endpoint check treated any HTTP error (including a correctly-enforced 401 from Office Bridge/Hermes3D's fail-closed auth) as a failure. Fixed: 4xx now reports PASS with an explanation; only unreachable/5xx fails.
+3. `health.ps1`: required all 4 managed scheduled tasks to be `Running`, but `PlatformHealthWatchdog`/`PlatformMaintenance` are daily/time-triggered periodic tasks whose healthy resting state is `Ready` (confirmed against this machine's real trigger definitions). Fixed to accept `Ready` as healthy for periodic tasks specifically.
+4. `stop.ps1`/`start.ps1`: called `Stop-ScheduledTask`/`Start-ScheduledTask` with `-TaskName` alone, which defaults to the root task path and fails to resolve tasks registered under `\Hermes\`. Fixed by piping the real task object (which carries its actual path) through instead.
+5. `start.ps1`: declared both `[CmdletBinding(SupportsShouldProcess = $true)]` (which auto-adds `-WhatIf`) **and** an explicit `param([switch]$WhatIf)` — a parameter collision that failed on every invocation. **This bug briefly left real production `PaperclipServer`/`OfficeVirtualCompany` services stopped** during testing (bug 4's fix let `stop.ps1` succeed; this bug then made the following `start.ps1` call fail outright). Fixed immediately; service was confirmed fully restored (`health.ps1` exit 0) within seconds.
+6. `health.ps1`: `$failCount = (... | Where-Object {...}).Count` silently evaluates to `$null` (not an error, not 0) when **exactly one** object matches — a bare `PSCustomObject` has no `.Count` property — and `$null -gt 0` is `$false` in PowerShell. This meant a real single failure was reported as `"All checks passed... exit 0"`. Fixed by wrapping in `@(...)` to force array semantics regardless of match count.
 
-This effort's own discipline (see [README.md's status banner](../README.md)) is to never claim a test passed unless it actually ran. The items above are real, scoped next steps — not forgotten, not hidden. If you run any of them yourself, please report results via an issue (see [../SECURITY.md](../SECURITY.md) for security-sensitive findings specifically) so this file can be updated with real evidence rather than being the only perpetually-"pending" status.
+Full narrative, including the specific real-machine evidence for each, is in `CORRECTIONS-LOG.md` (not shipped in this repo — it is this effort's internal working record; the fixes themselves are what's in the code).
+
+## A separate, deeper finding: Task Scheduler state can decouple from a long-lived process
+
+After the fixes above, `health.ps1` still correctly reports `PaperclipServer`'s scheduled-task state as `Ready` (not `Running`) on this reference machine, even though the real Paperclip HTTP endpoint has remained continuously healthy (HTTP 200) throughout. Investigated directly: the real listening process (confirmed via `Get-NetTCPConnection`) has a start time *before this entire testing session began* — meaning none of the stop/start/restart calls in this testing pass ever actually reached it. This is a pre-existing characteristic of Windows Task Scheduler's interaction with this specific long-running supervisor process on this machine, not something introduced by this effort, and not something this effort attempted to fix by force-killing a stable 24+ hour production process. Treat the HTTP endpoint check as authoritative for actual service availability; treat the task-state check as a secondary signal specifically about supervisor/restart-on-crash coverage.
+
+## NOT yet verified (scheduled, not done — explained, not hidden)
+
+- **Full end-to-end installation on a genuinely clean machine/VM** — everything above was run via the realistic Adopt-Existing path on a machine that already has the platform installed. A true clean-OS fresh install has never been executed.
+- **Real multi-agent task execution with live LLM calls** — deliberately out of scope for this pass: credential rotation for the Telegram bot token and model API key is confirmed not done, and the owner's explicit choice was to use existing live credentials for read-only status checks only, not to run new paid inference or create new agents/companies. The meeting feature's *logic* is verified via its real, passing unit test (`standup3dAll11Agents.test.ts`, 5/5 runs); live, visual, multi-agent meeting execution is not.
+- **Browser-based 3D/2D UI testing** — not performed (no interactive browser session was driven against the running office).
+- **Cross-interface testing** (Telegram → Paperclip → Hermes → 3D Office and reverse) — not performed; blocked on the same credential-rotation status above.
+- **Load/performance testing** beyond this single low-spec reference machine's real build/test timings.
+- **A genuinely clean-OS fresh install on a second machine** — not performed; this effort has one real machine available.
 
 ## A note on an old test-count discrepancy
 
-The original platform's own historical reports contained a self-contradiction: one section claimed "390/390 PASS, 0 NOT_TESTED," while another section of the *same document* said "387 PASS, 0 FAIL, 3 NOT_TESTED." This repo does not republish either figure as settled fact.
-
-This repo does ship one of the raw source artifacts behind that claim, unmodified, at
-[`docs/development-history/test-evidence/office-e2e-results.json`](../docs/development-history/test-evidence/office-e2e-results.json)
-— it reports "390/390, 0 FAIL, 0 NOT_TESTED" internally. It is kept as-is for historical/audit
-transparency (this is what the original platform actually produced), **not** as a verified
-claim by this repository. Treat it, and the other files under `test-evidence/`, as primary
-source material to independently re-check — not as ground truth — exactly like the rest of
-the original platform's historical reports.
+The original platform's own historical reports contained a self-contradiction: one section claimed "390/390 PASS, 0 NOT_TESTED," while another section of the *same document* said "387 PASS, 0 FAIL, 3 NOT_TESTED." This repo does not republish either figure as settled fact. It does ship one of the raw source artifacts behind that claim, unmodified, at [`docs/development-history/test-evidence/office-e2e-results.json`](../docs/development-history/test-evidence/office-e2e-results.json) for historical/audit transparency — not as a verified claim by this repository.

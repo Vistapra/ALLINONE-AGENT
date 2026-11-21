@@ -43,6 +43,19 @@ The reference installation's Telegram bot token and model API key are confirmed 
 
 ## Known operational gaps
 
-- Office Bridge requires Node >= 22 (see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)) — a pre-existing platform limitation, not introduced by this repo.
+- Office Bridge requires Node >= 22 (see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)) — a pre-existing platform limitation, not introduced by this repo. Verified working on an isolated Node 22 install as of 2026-11-21 (see [TESTING.md](TESTING.md)).
 - No live model-provider connectivity check exists in `setup.ps1` yet.
-- `npm audit` on Hermes3D reports 24 dependency vulnerabilities (2 critical) — not auto-remediated; review before production use.
+- **(Resolved 2026-11-21)** `npm audit` on Hermes3D: 24 dependency vulnerabilities (2 critical) have been fixed (0 remaining) — see [TESTING.md](TESTING.md) and `VULNERABILITY-REMEDIATION-REPORT.md`.
+- A scheduled task's `State` (e.g. `PaperclipServer`) can decouple from whether the real underlying server process is actually alive and healthy — confirmed on the reference machine (see [TESTING.md](TESTING.md)). Use `health.ps1`'s HTTP endpoint checks as the authoritative signal for service availability; treat scheduled-task state as a secondary signal about restart-on-crash supervision specifically.
+- 8 scripts (`start.ps1`, `stop.ps1`, `restart.ps1`, `health.ps1`, `uninstall.ps1`, `update.ps1`, `automation\platform-watchdog.ps1`, `automation\scheduled-tasks\register-platform-tasks.ps1`, `automation\scheduled-tasks\register-paperclip-task.ps1`) hardcode the exact reference task names (`PaperclipServer`, `OfficeVirtualCompany`, etc.) with no override parameter. This is safe for the realistic Adopt-Existing path (which reuses these exact names by design, and `install.ps1` deliberately never re-registers tasks in Adopt mode — see Stage 7 in its own output). It would matter if this repo is ever extended to support multiple side-by-side instances on one machine, or a Fresh install that intentionally uses different task names — not needed for anything tested in this pass, but worth knowing before building on top of it.
+
+## Per-agent status (reference install)
+
+Querying the real production Paperclip company (read-only, via the existing Board API key) on 2026-11-21 showed 10 of 11 agents `idle` (healthy) and **CEO Agent in `error` status**, caused by an interrupted Hermes Agent self-update:
+
+```
+hermes: source-update completion failed: an update is still running; wait for it to exit,
+then relaunch Hermes; running with the previous dependencies - run `hermes update` to finish it
+```
+
+This is a **Hermes Agent-level issue, outside this repository's scope** — it is caused by Hermes Agent's own update mechanism (`C:\Users\<user>\HermesUpdater\`), not by anything in ALLINONE-AGENT. It was not remediated as part of this effort. If you see this, run `hermes update` yourself (per the error message) to let the interrupted update finish, then check the agent's status again via the Paperclip dashboard or API.

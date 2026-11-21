@@ -97,7 +97,7 @@ Atau lewat batch wrapper (tidak perlu mengubah execution policy PowerShell siste
 install.cmd
 ```
 
-**Catatan jujur**: `install.ps1` sudah divalidasi secara statis (parsing, logika per-stage, dan sebagian fungsi preflight-nya benar-benar dijalankan langsung terhadap mesin nyata saat Phase 45) tetapi **belum pernah dijalankan end-to-end** dari awal sampai akhir di mesin mana pun. Jalankan `-DryRun` dulu dan baca rencananya sebelum lanjut.
+**Catatan jujur (diperbarui 2026-11-21)**: `install.ps1`, `health.ps1`, `stop.ps1`/`start.ps1`/`restart.ps1` **sudah benar-benar dijalankan end-to-end** (bukan hanya divalidasi statis) terhadap mesin referensi nyata, melalui jalur **Adopt-Existing** (skenario realistis untuk mesin yang sudah memiliki Hermes Agent terpasang) — lihat [docs/TESTING.md](docs/TESTING.md) untuk bukti lengkap, termasuk 6 bug nyata yang ditemukan lewat eksekusi sungguhan (bukan sekadar parsing) dan sudah diperbaiki. **Belum diuji**: instalasi *fresh* di mesin/VM yang benar-benar bersih (clean-OS) — baru jalur Adopt-Existing yang terbukti. Jalankan `-DryRun` dulu dan baca rencananya sebelum lanjut pada mesin lain.
 
 ## 6. Instalasi — Mode
 
@@ -241,22 +241,24 @@ Lihat [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) untuk teks lisensi/copyri
 
 ## 20. License
 
-Keempat dependency upstream berlisensi MIT (diverifikasi dari berkas LISENSI asli masing-masing, bukan diasumsikan). **Kode custom milik repositori ini sendiri** (`apps/office-bridge/`, `integration/`, `agents/`, `automation/`, skrip installer) **belum memiliki berkas LICENSE sendiri** — ini keputusan yang perlu diambil pemilik repositori; mengingat seluruh dependency upstream bersifat MIT, lisensi MIT yang konsisten adalah rekomendasi yang wajar, tapi ini bukan keputusan yang diambil sepihak di sini.
+Keempat dependency upstream berlisensi MIT (diverifikasi dari berkas LISENSI asli masing-masing, bukan diasumsikan). **Kode custom milik repositori ini sendiri** (`apps/office-bridge/`, `integration/`, `agents/`, `automation/`, skrip installer, dokumentasi) **berlisensi MIT**, sesuai keputusan eksplisit pemilik repositori — lihat berkas [`LICENSE`](../LICENSE) di root repositori. Ini konsisten dengan lisensi keempat dependency upstream, tapi tetap merupakan berkas lisensi terpisah milik kode asli repositori ini, bukan pewarisan otomatis dari upstream.
 
 ## 21. Known Limitations (Batasan yang Diketahui)
 
 Ditulis selengkap mungkin dengan sengaja — ini bagian paling penting untuk kepercayaan:
 
-- Instalasi *end-to-end* penuh **belum pernah dijalankan** di mesin mana pun.
-- Office Bridge tidak bisa dimuat di Node < 22 (lihat System Requirements) — ini bug platform asli, diwarisi, bukan baru.
+- **(Diperbarui 2026-11-21)** `install.ps1`/`health.ps1`/`stop.ps1`/`start.ps1`/`restart.ps1` sudah benar-benar dijalankan end-to-end di mesin referensi nyata lewat jalur **Adopt-Existing** — lihat [docs/TESTING.md](docs/TESTING.md). Yang **belum** diuji: instalasi *fresh* di mesin/VM yang benar-benar bersih (clean-OS).
+- Office Bridge tidak bisa dimuat di Node < 22 (lihat System Requirements) — ini bug platform asli, diwarisi, bukan baru. **Sudah diverifikasi berfungsi penuh di Node 22** (lihat docs/TESTING.md) menggunakan instalasi Node 22 terisolasi, tanpa mengubah Node sistem mesin referensi.
 - Aset 3D/HDRI Hermes3D tidak memiliki lisensi yang dinyatakan — tidak diikutkan ke repo ini.
-- Lisensi kode custom repositori ini sendiri belum ditetapkan (lihat License di atas).
-- Kesejajaran runtime penuh antara mode 3D dan 2D (bukan cuma kesamaan struktural kode) belum dibuktikan.
-- Klaim "11 agent duduk bersama dalam satu rapat" — mekanisme dasarnya (pathfinding, delegasi task Paperclip) nyata, tapi bukti evidence rapat multi-agent yang benar-benar selesai dan terdokumentasi **belum ditemukan**; jangan menganggap ini sudah berfungsi penuh.
+- **(Selesai)** Lisensi kode custom repositori ini sendiri: MIT, lihat [`LICENSE`](../LICENSE).
+- Kesejajaran runtime penuh antara mode 3D dan 2D (bukan cuma kesamaan struktural kode) belum dibuktikan secara visual/browser — tapi logika backend-nya (termasuk fitur rapat 11-agent) kini punya bukti nyata: lihat poin berikutnya.
+- Klaim "11 agent duduk bersama dalam satu rapat" — mekanisme dasarnya (pathfinding, delegasi task Paperclip) nyata, dan **test unit nyata untuk fitur ini (`tests/unit/standup3dAll11Agents.test.ts`) kini lulus di 5 dari 5 full-suite run** (lihat docs/TESTING.md). Yang **belum** dibuktikan: eksekusi rapat multi-agent secara visual/live dengan panggilan LLM sungguhan — ini sengaja tidak dilakukan karena kredensial belum dirotasi (lihat Security & Privacy).
 - Angka pengujian lama dari platform asli ("390/390 PASS") **kontradiktif dengan dirinya sendiri** di sumber aslinya (bagian lain dokumen yang sama menyebut "387 PASS, 3 NOT_TESTED") — jangan dipublikasikan ulang sebagai fakta tanpa rekonsiliasi lebih lanjut.
-- `npm audit` pada Hermes3D melaporkan 24 kerentanan dependency (termasuk 2 kritis) — belum diperbaiki secara otomatis, perlu peninjauan sendiri sebelum produksi.
+- **(Selesai)** `npm audit` pada Hermes3D: 24 kerentanan (termasuk 2 kritis) **sudah diperbaiki, 0 tersisa** — diverifikasi lewat `npm audit` langsung, lihat `VULNERABILITY-REMEDIATION-REPORT.md` dan docs/TESTING.md untuk versi paket yang di-bump dan hasil regresi lengkap (186/186 file test, 1233/1233 test individual lulus).
 - Rotasi kredensial pada instalasi referensi asli belum dilakukan pemiliknya (lihat Security & Privacy) — ini bukan sesuatu yang bisa diperbaiki dari dalam repo ini.
 - Verifikasi konektivitas provider model secara live belum diimplementasikan di `setup.ps1`.
+- **(Baru)** Status 11 agent pada instalasi produksi referensi: 10 dari 11 agent `idle` (sehat). **CEO Agent** berstatus `error` karena proses update Hermes Agent sendiri yang terhenti di tengah jalan (`hermes update` perlu dijalankan pemilik untuk menyelesaikannya) — ini masalah pada lapisan Hermes Agent, di luar cakupan repositori ini, dan tidak diperbaiki dari sini.
+- Pengujian Fase 52/53 dilakukan pada satu mesin referensi (Adopt-Existing), bukan di VM/mesin bersih kedua — lihat docs/TESTING.md untuk cakupan persis apa yang sudah dan belum diuji.
 
 ## 22. Roadmap
 

@@ -27,7 +27,12 @@ try {
             continue
         }
         if ($PSCmdlet.ShouldProcess($taskName, 'Stop-ScheduledTask')) {
-            Stop-ScheduledTask -TaskName $taskName
+            # Pipe the actual task object through rather than passing -TaskName alone: these
+            # tasks live under \Hermes\, not the root path Stop-ScheduledTask defaults to when
+            # given only a bare name, which fails with "the system cannot find the file
+            # specified" - confirmed against this real machine. Piping carries the real TaskPath
+            # with it regardless of what path a given install registers tasks under.
+            $task | Stop-ScheduledTask
             Write-Host "  Stopped $taskName." -ForegroundColor Green
         }
     }

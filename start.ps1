@@ -7,7 +7,11 @@
     those belong to the upstream hermes-agent package and are managed by its own tooling.
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
-param([switch]$WhatIf)
+param()
+# Note: -WhatIf is provided automatically by SupportsShouldProcess - an explicit [switch]$WhatIf
+# param here previously collided with it, causing "A parameter with the name 'WhatIf' was defined
+# multiple times" on every single invocation of this script, with or without -WhatIf. Confirmed
+# against this real machine: this bug meant start.ps1 could never actually start anything.
 
 $ErrorActionPreference = 'Stop'
 $ScriptRoot = $PSScriptRoot
@@ -29,7 +33,10 @@ try {
             continue
         }
         if ($PSCmdlet.ShouldProcess($taskName, 'Start-ScheduledTask')) {
-            Start-ScheduledTask -TaskName $taskName
+            # Same fix as stop.ps1: pipe the real task object through so the correct TaskPath
+            # (\Hermes\ on this reference machine) travels with it, instead of -TaskName alone
+            # defaulting to root and failing to resolve the task.
+            $task | Start-ScheduledTask
             Write-Host "  Started $taskName." -ForegroundColor Green
         }
     }

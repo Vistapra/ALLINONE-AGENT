@@ -1,13 +1,35 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it } from "vitest";
+import fs from "node:fs";
+import os from "node:os";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { GET as getPathSuggestions } from "@/app/api/path-suggestions/route";
 import { POST as postAgentState } from "@/app/api/gateway/agent-state/route";
 import { POST as postSkillRemove } from "@/app/api/gateway/skills/remove/route";
 import { POST as postCustomRuntime } from "@/app/api/runtime/custom/route";
 import { POST as postCompanyProxy } from "@/app/api/company/[...slug]/route";
 
+// route.ts reads process.env.ALLINONE_HOME into a module-level constant at import time
+// (falling back to `${os.homedir()}/ALLINONE-AGENT` if unset), so this test can't retarget
+// it via process.env in beforeEach/it - it must ensure the directory the route ALREADY
+// resolved to actually exists, mirroring the exact same fallback logic.
+const governedWorkspacesDir = `${process.env.ALLINONE_HOME || `${os.homedir()}/ALLINONE-AGENT`}/workspaces`;
+
 describe("Unified Company Governance & Security Hardening", () => {
   const prevGov = process.env.UNIFIED_COMPANY_GOVERNANCE;
+  const workspacesDirPreexisted = fs.existsSync(governedWorkspacesDir);
+
+  beforeAll(() => {
+    if (!workspacesDirPreexisted) {
+      fs.mkdirSync(governedWorkspacesDir, { recursive: true });
+    }
+  });
+
+  afterAll(() => {
+    // Only remove what this test created - never delete a real pre-existing workspaces dir.
+    if (!workspacesDirPreexisted && fs.existsSync(governedWorkspacesDir)) {
+      fs.rmSync(governedWorkspacesDir, { recursive: true, force: true });
+    }
+  });
 
   afterEach(() => {
     if (prevGov === undefined) delete process.env.UNIFIED_COMPANY_GOVERNANCE;
