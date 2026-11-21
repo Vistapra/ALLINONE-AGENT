@@ -31,7 +31,7 @@
     "next": "16.4.6",
     "phaser": "^3.90.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react-dom": "19.3.1",
     "react-markdown": "^10.1.0",
     "react-mentions-ts": "^5.4.7",
     "remark-gfm": "^4.0.1",
